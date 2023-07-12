@@ -66,8 +66,8 @@ clean:
 generator: *.go
 	go build
 
-generate: generator mibs
-	MIBDIRS=$(MIB_PATH) ./generator --fail-on-parse-errors generate
+generate: generator
+	MIBDIRS=$(MIB_PATH) ./generator --fail-on-parse-errors generate --output-path output/result.yml
 
 parse_errors: generator mibs
 	MIBDIRS=$(MIB_PATH) ./generator --fail-on-parse-errors parse_errors

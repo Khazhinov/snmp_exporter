@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  exporter:
+    build:
+      context: .
+      dockerfile: Dockerfile-executable
+    volumes:
+      - ./output:/snmp_exporter/generator/output
+#    command:
+#      - sleep
+#      - "100000"
+    command: >
+      bash -c "cd /snmp_exporter/generator && ls -la ./mibs && make generate"

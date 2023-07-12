@@ -1,0 +1,1922 @@
+Shtyl-MIB
+ DEFINITIONS ::= BEGIN
+	IMPORTS	  	
+        enterprises, MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, Integer32        FROM SNMPv2-SMI
+        MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP FROM SNMPv2-CONF;
+
+
+shtyl MODULE-IDENTITY
+        LAST-UPDATED "201307311000Z"
+        ORGANIZATION "JCS IRBIS-T "
+        CONTACT-INFO "Post code 300012, RUSSIA, Tula, Gorodskoy st., build 39"
+        DESCRIPTION  "The MIB module to describe IRBIS-T UPS"
+
+		 
+        REVISION "201004151000Z"
+        DESCRIPTION "First version"
+
+        REVISION "201006091000Z"
+        DESCRIPTION "Second Version" 
+
+--Изменена структура Trap-ов
+		REVISION "201007121600z"
+        DESCRIPTION "Third Version" 
+
+
+--Добавлен раздел данные журнала событий
+		REVISION "201007200900z"
+        DESCRIPTION "4 Version" 
+
+
+--Добавлены разделы, изменена работа трапов
+		REVISION "201010141500z"
+        DESCRIPTION "5 Version" 
+
+--Добавлены разделы настроек соединения
+		REVISION "201010201100z"
+        DESCRIPTION "6 Version" 
+			 
+--Добавлены переменные маска и шлюз в настройки tcp ip
+		REVISION "201011291026z"
+        DESCRIPTION "7 Version" 
+		 
+--Добавлены переменные выходное напряжение и ток группы инверторов, сохраняются тексты трапов в таблицах
+		REVISION "201101191500z"
+        DESCRIPTION "8 Version" 
+
+--Добавлены разделы: термореле и таймеры
+		REVISION "201109191500z"
+        DESCRIPTION "9 Version" 
+
+--Добавлены разделы: супервизоры сети, к-к контроллера, журнал событий
+		REVISION "201110281500z"
+        DESCRIPTION "10 Version for v3.0" 
+             
+--Добавлены разделы: супервизоры сети, к-к контроллера, журнал событий
+		REVISION "201112141500z"
+        DESCRIPTION "11 Version for v3.01" 
+	
+--Добавлена возможность включения/выключения единиц измерения
+		REVISION "201201241500z"
+        DESCRIPTION "12 Version for v3.04"
+
+--Добавлено отображение результатов тестов батарей
+		REVISION "201202021500z"
+        DESCRIPTION "13 Version for v3.05"	
+
+	     
+--Добавлена расширенная информация о счетчиках
+		REVISION "201205181500z"
+        DESCRIPTION "14 Version for v3.11"	
+
+--Добавлена информация о модулях Пельтье
+		REVISION "201307311500z"
+        DESCRIPTION "15 Version for v3.22"
+
+--Добавлена потребляемая мощность в процентах и флаги аварий
+		REVISION "201311111700z"
+        DESCRIPTION "16 Version for v3.50"	
+
+--Добавлено
+		REVISION "201408061400z"
+        DESCRIPTION "17 Version for v3.55"
+
+--Добавлена таблица состояний логических операторов
+		REVISION "201509091400z"
+        DESCRIPTION "18 Version for v3.67"	
+	     ::= { enterprises 34498 }
+	     
+--Общая информация
+
+shtylInfo OBJECT IDENTIFIER ::={shtyl 1}
+
+--Организация производитель
+	organisationName OBJECT-TYPE    
+	    SYNTAX      OCTET STRING (SIZE (0..255))
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "Organisation Name"
+	    ::= { shtylInfo 1 } 
+
+--Название устройства
+	deviceName OBJECT-TYPE    
+	    SYNTAX      OCTET STRING (SIZE (0..255))
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "Device Name"
+	    ::= { shtylInfo 2 }
+
+--Номер версии SNMP-агента
+	versionNumber OBJECT-TYPE    
+	    SYNTAX      OCTET STRING (SIZE (0..255))
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "Number of version snmp-agent"
+	    ::= { shtylInfo 3 }
+
+--Тип устройства
+	deviceClass	OBJECT-TYPE 
+	    SYNTAX      INTEGER
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "Device Class: 1 - Power System"
+	    ::= { shtylInfo 4 }
+--Версия MIB файла для устройства
+	deviceMibFileVersion	OBJECT-TYPE 
+	    SYNTAX      INTEGER
+	    MAX-ACCESS  read-only
+	    STATUS      current
+	    DESCRIPTION "Version of MIB file for device"
+	    ::= { shtylInfo 5 }
+
+ -- Устройства Штиль
+
+shtylDevices OBJECT IDENTIFIER ::={shtyl 2}
+
+-- Системы электропитания
+	powerSystem OBJECT IDENTIFIER ::={shtylDevices 1}
+		
+		-- Состояние системы в целом
+		status OBJECT IDENTIFIER ::={powerSystem 1}
+
+--Параметры состояния системы
+		   param OBJECT IDENTIFIER ::={status 1}
+
+--Текущий рабочий режим
+			workStatus OBJECT-TYPE    
+	    			SYNTAX      OCTET STRING (SIZE (0..255))
+	    			MAX-ACCESS  read-only
+	    			STATUS      current
+	    			DESCRIPTION "Work status"
+	    			::= { param 1 } 
+--Выходное постоянное напряжение
+			uDC OBJECT-TYPE    
+	    			SYNTAX      OCTET STRING (SIZE (0..255))
+	    			MAX-ACCESS  read-only
+	    			STATUS      current
+	    			DESCRIPTION "DC voltage"
+	    			::= { param 2 } 
+--Выходной постоянный ток
+			iDC OBJECT-TYPE    
+	    			SYNTAX      OCTET STRING (SIZE (0..255))
+	    			MAX-ACCESS  read-only
+	    			STATUS      current
+	    			DESCRIPTION "DC Current"
+	    			::= { param 3 }
+--Температура контроллера
+			contollerTemperature OBJECT-TYPE    
+	    			SYNTAX      OCTET STRING (SIZE (0..255))
+	    			MAX-ACCESS  read-only
+	    			STATUS      current
+	    			DESCRIPTION "Temperature of controller"
+	    			::= { param 4 }
+--Количество групп инверторов
+			iACCount OBJECT-TYPE    
+	    			SYNTAX      INTEGER
+	    			MAX-ACCESS  read-only
+	    			STATUS      current
+	    			DESCRIPTION "Number of AC group"
+	    			::= { param 5 }
+--Количество аварийных сообщений в системе
+			alarmCount OBJECT-TYPE    
+	    			SYNTAX      INTEGER
+	    			MAX-ACCESS  read-only
+	    			STATUS      current
+	    			DESCRIPTION "Number of Alarms"
+	    			::= { param 6 }
+--Наличие входного переменного напряжения (0 - нет, 1 - есть)
+			aCFlag OBJECT-TYPE    
+	    			SYNTAX      INTEGER
+	    			MAX-ACCESS  read-only
+	    			STATUS      current
+	    			DESCRIPTION "AC Flag (1 - AC present, 0 - AC absent"
+	    			::= { param 7 }
+--Мощность постоянного напряжения
+			dCPower OBJECT-TYPE    
+	    			SYNTAX      OCTET STRING (SIZE (0..255))
+	    			MAX-ACCESS  read-only
+	    			STATUS      current
+	    			DESCRIPTION "DC Power"
+	    			::= { param 8 }
+--Загрузка по постоянному напряжению в процентах
+			dCLoadPercent OBJECT-TYPE    
+	    			SYNTAX      OCTET STRING (SIZE (0..255))
+	    			MAX-ACCESS  read-only
+	    			STATUS      current
+	    			DESCRIPTION "DC load"
+	    			::= { param 9 }
+
+--Таблица параметров переменного напряжения для групп инверторов
+			aCGroupTable OBJECT-TYPE
+			SYNTAX      		SEQUENCE OF ACGroupEntry
+			MAX-ACCESS  		not-accessible
+			STATUS      		current
+			DESCRIPTION		"A list of AC group current"
+			::= { status 2 }
+
+
+				aCGroupEntry OBJECT-TYPE
+				SYNTAX			ACGroupEntry
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of AC group parameters."
+				INDEX   		{ aCIndex }
+				::= { aCGroupTable 1 }
+
+
+				ACGroupEntry ::=
+				SEQUENCE {
+				  aCIndex		INTEGER,
+	  			  aCOutCurrent		OCTET STRING,
+				  aCOutVoltage		OCTET STRING,
+				  aCInCurrent		OCTET STRING,
+				  aCInVoltage		OCTET STRING,
+				  aCOutPower		OCTET STRING,
+				  aCLoadPercent 	OCTET STRING,
+				  aCBypassStFl  	INTEGER,
+				  aCInvertVoltage	INTEGER,
+				  aCGridVoltage		INTEGER
+				}
+			
+					aCIndex	OBJECT-TYPE
+					SYNTAX 			INTEGER(1..3)
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of the AC group."
+					::=  			{ aCGroupEntry 1}
+--Выходной ток группы инверторов
+					aCOutCurrent OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"AC group out current."
+					::=  			{ aCGroupEntry 2 }
+--Выходное напряжение группы инверторов
+					aCOutVoltage OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"AC group out voltage."
+					::=  			{ aCGroupEntry 3 }
+--Входной ток группы инверторов
+					aCInCurrent OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"AC group in current."
+					::=  			{ aCGroupEntry 4 }
+--Входное напряжение группы инверторов
+					aCInVoltage OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"AC group in voltage."
+					::=  			{ aCGroupEntry 5 }	
+--Выходная мощность группы инверторов
+					aCOutPower OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"AC out power."
+					::=  			{ aCGroupEntry 6 }
+--Загруженность группы инверторов в процентах
+					aCLoadPercent OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"AC load in percent."
+					::=  			{ aCGroupEntry 7 }
+--Флаг состояния байпаса 0 - основное состояние, 1 - резервное состояние
+					aCBypassStFl OBJECT-TYPE
+					SYNTAX 			INTEGER
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Bypass status flag (0 - main power supply, 1 - redundant power supply"
+					::=  			{ aCGroupEntry 8 }
+--Напряжение на инверторном входе байпаса или выходное напряжение группы инверторов 
+					aCInvertVoltage OBJECT-TYPE
+					SYNTAX 			INTEGER
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Inverter voltage"
+					::=  			{ aCGroupEntry 9 }
+--Напряжение сети на входе байпаса
+					aCGridVoltage OBJECT-TYPE
+					SYNTAX 			INTEGER
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Grid voltage"
+					::=  			{ aCGroupEntry 10 }
+					
+--Таблица аварийных сообщений
+			alarmTable OBJECT-TYPE
+			SYNTAX      		SEQUENCE OF AlarmEntry
+			MAX-ACCESS  		not-accessible
+			STATUS      		current
+			DESCRIPTION		"A list of Alarms"
+			::= { status 3 }
+
+				alarmEntry OBJECT-TYPE
+				SYNTAX			AlarmEntry
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of Alarms."
+				INDEX   		{ alarmIndex }
+				::= { alarmTable 1 }
+
+				AlarmEntry ::=
+				SEQUENCE {
+				  alarmIndex	INTEGER,
+	  			  alarmText	OCTET STRING
+				}
+			
+					alarmIndex	OBJECT-TYPE
+					SYNTAX 			INTEGER(1..32)
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of Alarm."
+					::=  			{ alarmEntry 1}
+--Текст аварийного сообщения
+					alarmText OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Text of Alarm."
+					::=  			{ alarmEntry 2 }
+
+--Флаги аварий 0 - норма, 1 - авария
+		   sysAlarmFlags OBJECT IDENTIFIER ::={status 4}
+		     internalAlarmFlags OBJECT IDENTIFIER ::={sysAlarmFlags 1}
+
+--Общая авария
+			mainAlarmFlag OBJECT-TYPE    
+	    			SYNTAX      INTEGER
+	    			MAX-ACCESS  read-only
+	    			STATUS      current
+	    			DESCRIPTION "Main alarm flag"
+	    			::= { internalAlarmFlags 1 } 
+--Нет входного напряжения АС
+			acAlarmFlag OBJECT-TYPE    
+	    			SYNTAX      INTEGER
+	    			MAX-ACCESS  read-only
+	    			STATUS      current
+	    			DESCRIPTION "AC alarm flag"
+	    			::= { internalAlarmFlags 2 } 
+--Авария выпрямителей
+			recAlarmFlag OBJECT-TYPE    
+	    			SYNTAX      INTEGER
+	    			MAX-ACCESS  read-only
+	    			STATUS      current
+	    			DESCRIPTION "Rectifier alarm flag"
+	    			::= { internalAlarmFlags 3 } 
+--Авария инверторов
+			invAlarmFlag OBJECT-TYPE    
+	    			SYNTAX      INTEGER
+	    			MAX-ACCESS  read-only
+	    			STATUS      current
+	    			DESCRIPTION "Inverter alarm flag"
+	    			::= { internalAlarmFlags 4 } 
+--Начало разряда батареи
+			battDischargeAlarmFlag OBJECT-TYPE    
+	    			SYNTAX      INTEGER
+	    			MAX-ACCESS  read-only
+	    			STATUS      current
+	    			DESCRIPTION "Battery discharge alarm flag"
+	    			::= { internalAlarmFlags 5 } 
+--Глубокий разряд батареи
+			battLowAlarmFlag OBJECT-TYPE    
+	    			SYNTAX      INTEGER
+	    			MAX-ACCESS  read-only
+	    			STATUS      current
+	    			DESCRIPTION "Deep discharge battery alarm flag"
+	    			::= { internalAlarmFlags 6 } 
+--Перекос батареи
+			battDisbalanceAlarmFlag OBJECT-TYPE    
+	    			SYNTAX      INTEGER
+	    			MAX-ACCESS  read-only
+	    			STATUS      current
+	    			DESCRIPTION "Battery disbalance alarm flag"
+	    			::= { internalAlarmFlags 7 } 
+
+		     externalAlarmFlags OBJECT IDENTIFIER ::={sysAlarmFlags 2}
+
+
+
+
+
+
+--Батареи
+		battery OBJECT IDENTIFIER ::={powerSystem 3}
+--Параметры батарей
+		  batParam OBJECT IDENTIFIER ::={battery 1}			
+--Количество групп батарей (1 или 2)
+			batteryCount  OBJECT-TYPE
+			SYNTAX 			INTEGER
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Number of Battery"
+			::=  			{ batParam 1}
+--Суммарный ток батарей
+			batteryCurrentt  OBJECT-TYPE
+			SYNTAX 			OCTET STRING (SIZE (0..255))
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Battery Current"
+			::=  			{ batParam 2}
+
+--Таблица параметров каждой группы батарей
+			batteryTable OBJECT-TYPE
+			SYNTAX      		SEQUENCE OF BatteryEntry
+			MAX-ACCESS  		not-accessible
+			STATUS      		current
+			DESCRIPTION		"A list of Battery parameters"
+			::= { battery 2 }
+
+				batteryEntry OBJECT-TYPE
+				SYNTAX			BatteryEntry
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of Battery parameters."
+				INDEX   		{ batteryIndex }
+				::= { batteryTable 1 }
+
+				BatteryEntry ::=
+				SEQUENCE {
+				  batteryIndex		INTEGER,
+	  			  batteryCurrent	OCTET STRING,
+	  			  batteryVoltage	OCTET STRING,
+	  			  batteryTemperature	OCTET STRING
+				}
+			
+					batteryIndex	OBJECT-TYPE
+					SYNTAX 			INTEGER(1..2)
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of Battery."
+					::=  			{ batteryEntry 1}
+--Ток группы батарей
+					batteryCurrent  OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Battery current."
+					::=  			{ batteryEntry 2 }
+--Напряжение группы батарей
+					batteryVoltage OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Battery voltage."
+					::=  			{ batteryEntry 3 }
+--Температура группы батарей
+					batteryTemperature OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Battery temperature."
+					::=  			{ batteryEntry 4 }
+--Результаты теста мощности					
+		  testPower OBJECT IDENTIFIER ::={battery 3}
+--Текстовое описание результатов последнего проведенного теста или их отсутствия с указанием причин
+			tstPowerStatus  OBJECT-TYPE
+			SYNTAX 			OCTET STRING (SIZE (0..255))
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"power test result"
+			::=  			{ testPower 1}		  
+--Дата и время проведения последнего теста
+			tstPowerDateTime  OBJECT-TYPE
+			SYNTAX 			OCTET STRING (SIZE (0..255))
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"power test date and time"
+			::=  			{ testPower 2}
+--Напряжение, при котором проводился тест
+			tstPowerVoltage  OBJECT-TYPE
+			SYNTAX 			OCTET STRING (SIZE (0..255))
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"power test voltage"
+			::=  			{ testPower 3}
+--Ток батарей
+			tstPowerBatCurrent  OBJECT-TYPE
+			SYNTAX 			OCTET STRING (SIZE (0..255))
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"power test battery current"
+			::=  			{ testPower 4}
+--Ток выпрямителей
+			tstPowerRectifierCurrent  OBJECT-TYPE
+			SYNTAX 			OCTET STRING (SIZE (0..255))
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"power test rectifier current"
+			::=  			{ testPower 5}
+--Результаты теста емкости					
+		  testCapacity OBJECT IDENTIFIER ::={battery 4}
+--Текстовое описание результатов последнего проведенного теста или их отсутствия с указанием причин
+			tstCapStatus  OBJECT-TYPE
+			SYNTAX 			OCTET STRING (SIZE (0..255))
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"capacity test result"
+			::=  			{ testCapacity 1}		  
+--Дата и время проведения последнего теста
+			tstCapDateTime  OBJECT-TYPE
+			SYNTAX 			OCTET STRING (SIZE (0..255))
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"capacity test date and time"
+			::=  			{ testCapacity 2}
+--Длительность последнего теста
+			tstCapDuration  OBJECT-TYPE
+			SYNTAX 			OCTET STRING (SIZE (0..255))
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"test duration"
+			::=  			{ testCapacity 3}
+--Длительность аттестационного (первого) теста
+			tstCapFirstDuration  OBJECT-TYPE
+			SYNTAX 			OCTET STRING (SIZE (0..255))
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"duration of the attestation (first) test"
+			::=  			{ testCapacity 4}
+--Запас емкости в % от нормы запаса
+			tstCapReserve  OBJECT-TYPE
+			SYNTAX 			OCTET STRING (SIZE (0..255))
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Capacity reserve XX %"
+			::=  			{ testCapacity 5}
+--Напряжение разряда батареи, В
+			tstCapVoltage  OBJECT-TYPE
+			SYNTAX 			OCTET STRING (SIZE (0..255))
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Capacity test voltage"
+			::=  			{ testCapacity 6}
+--Ток разряда батареи, А
+			tstCapCurrent  OBJECT-TYPE
+			SYNTAX 			OCTET STRING (SIZE (0..255))
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Capacity test current"
+			::=  			{ testCapacity 7}
+--Емкость, отданная батареей во время теста, Ач
+			tstCapLossCapacity  OBJECT-TYPE
+			SYNTAX 			OCTET STRING (SIZE (0..255))
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Capacity test loss capacity"
+			::=  			{ testCapacity 8}
+--Выпрямители
+		rectifier OBJECT IDENTIFIER ::={powerSystem 4}
+--Параметры выпрямителей
+		  recParam OBJECT IDENTIFIER ::={rectifier 1}			
+--Количество выпрямителей
+			recCount  OBJECT-TYPE
+			SYNTAX 			INTEGER
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Number of Rectifier"
+			::=  			{ recParam 1}
+--Суммарный ток выпрямителей
+			recCurrentt  OBJECT-TYPE
+			SYNTAX 			OCTET STRING (SIZE (0..255))
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Rectifiers Current"
+			::=  			{ recParam 2}
+
+--Таблица параметров каждого выпрямителя
+		  recTable OBJECT-TYPE
+		  SYNTAX      		SEQUENCE OF RecEntry
+		  MAX-ACCESS  		not-accessible
+		  STATUS      		current
+		  DESCRIPTION		"A list of Rectifier parameters"
+		  ::= { rectifier 2 }
+
+				recEntry OBJECT-TYPE
+				SYNTAX			RecEntry
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of Rectifier parameters."
+				INDEX   		{ recIndex }
+				::= { recTable 1 }
+
+				RecEntry ::=
+				SEQUENCE {
+				  recIndex		INTEGER,
+	  			  recCurrent		OCTET STRING,
+	  			  recTemperature	OCTET STRING,
+	  			  recAlarm		OCTET STRING
+				}
+			
+					recIndex	OBJECT-TYPE
+					SYNTAX 			INTEGER(1..127)
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of Rectifier."
+					::=  			{ recEntry 1}
+--Ток выпрямителя
+					recCurrent  OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Rectifier current."
+					::=  			{ recEntry 2 }
+--Температура выпрямителя
+					recTemperature OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Rectifier temperature."
+					::=  			{ recEntry 3 }
+--Аварийные сообщения выпрямителя
+					recAlarm OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Rectifier alarms."
+					::=  			{ recEntry 4 }
+
+--Инверторы
+		invertor OBJECT IDENTIFIER ::={powerSystem 5}
+--Параметры инверторов
+		  invParam OBJECT IDENTIFIER ::={invertor 1}			
+--Количество инверторов
+			invCount  OBJECT-TYPE
+			SYNTAX 			INTEGER
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Number of Inverters"
+			::=  			{ invParam 1}
+
+--Таблица параметров каждого инвертора
+		  invTable OBJECT-TYPE
+		  SYNTAX      		SEQUENCE OF InvEntry
+		  MAX-ACCESS  		not-accessible
+		  STATUS      		current
+		  DESCRIPTION		"A list of Invertor parameters"
+		  ::= { invertor 2 }
+
+				invEntry OBJECT-TYPE
+				SYNTAX			InvEntry
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of Invertor parameters."
+				INDEX   		{ invIndex }
+				::= { invTable 1 }
+
+				InvEntry ::=
+				SEQUENCE {
+				  invIndex		INTEGER,
+	  			  invOutputCurrent	OCTET STRING,
+	  			  invOutputVoltage	OCTET STRING,
+	  			  invInputVoltage	OCTET STRING,
+				  invFrequency		OCTET STRING,
+				  invInputFrequency	OCTET STRING,
+				  invBypassNominalState	OCTET STRING,
+				  invBypassState	OCTET STRING,
+				  invTemperature	OCTET STRING,
+				  invGroup		INTEGER,
+				  invAlarm		OCTET STRING
+				}
+			
+					invIndex	OBJECT-TYPE
+					SYNTAX 			INTEGER(1..127)
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of Invertor."
+					::=  			{ invEntry 1}
+--Выходной ток инвертора
+					invOutputCurrent  OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Invertor Output current."
+					::=  			{ invEntry 2 }
+--Выходное напряжение инвертора
+					invOutputVoltage OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Invertor output voltage."
+					::=  			{ invEntry 3 }
+--Входное напряжение инвертора
+					invInputVoltage OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Invertor input voltage."
+					::=  			{ invEntry 4 }
+--Частота выходного напряжения инвертора
+					invFrequency OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Invertor frequency output voltage."
+					::=  			{ invEntry 5 }
+--Частота входного напряжения инвертора
+					invInputFrequency OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Invertor input frequency."
+					::=  			{ invEntry 6 }
+--Номинальное состояние байпаса
+					invBypassNominalState OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Bypass nominal state"
+					::=  			{ invEntry 7 }
+--текущее состояние байпаса
+					invBypassState OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Bypass state."
+					::=  			{ invEntry 8 }
+--температура инвертора
+					invTemperature OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Invertor temperature."
+					::=  			{ invEntry 9 }
+--группа, в которую включен инвертор
+					invGroup OBJECT-TYPE
+					SYNTAX 			INTEGER
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Invertor group."
+					::=  			{ invEntry 10 }
+--аварии инвертора
+					invAlarm OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Invertor alarm."
+					::=  			{ invEntry 11 }
+
+--супервизор объекта
+		svo OBJECT IDENTIFIER ::={powerSystem 6}
+--Параметры СВО
+		  svoParam OBJECT IDENTIFIER ::={svo 1}			
+--Состояние СВО (подключен/не подключен)
+			svoStatus  OBJECT-TYPE
+			SYNTAX 			OCTET STRING (SIZE (0..255))
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Status of svo (connected/not connected)"
+			::=  			{ svoParam 1}
+--Влажность воздуха
+			svoHumidity  OBJECT-TYPE
+			SYNTAX 			OCTET STRING (SIZE (0..255))
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Humidity"
+			::=  			{ svoParam 2}
+
+--Таблица температур, измеренных датчиками супервизора объекта
+		  svoTemperTable OBJECT-TYPE
+		    SYNTAX      		SEQUENCE OF SvoTemperEntry
+		    MAX-ACCESS  		not-accessible
+		    STATUS      		current
+		    DESCRIPTION		"A list of temperatures"
+		    ::= { svo 2 }
+
+				svoTemperEntry OBJECT-TYPE
+				SYNTAX			SvoTemperEntry
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of temperatures."
+				INDEX   		{ svoTemperIndex }
+				::= { svoTemperTable 1 }
+
+				SvoTemperEntry ::=
+				SEQUENCE {
+				  svoTemperIndex		INTEGER,
+	  			  svoTemperTemp			OCTET STRING
+				}
+--Индекс (номер) датчика температуры			
+					svoTemperIndex	OBJECT-TYPE
+					SYNTAX 			INTEGER(1..4)
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of temperatures."
+					::=  			{ svoTemperEntry 1}
+--Температура
+					svoTemperTemp  	OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Temperature."
+					::=  			{ svoTemperEntry 2 }
+
+--Таблица контрольных контактов
+		  kkTable OBJECT-TYPE
+		  SYNTAX      		SEQUENCE OF KkEntry
+		  MAX-ACCESS  		not-accessible
+		  STATUS      		current
+		  DESCRIPTION		"A list of control contact"
+		  ::= { svo 3 }
+
+				kkEntry OBJECT-TYPE
+				SYNTAX			KkEntry
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of control contact status."
+				INDEX   		{ kkIndex }
+				::= { kkTable 1 }
+
+				KkEntry ::=
+				SEQUENCE {
+				  kkIndex		INTEGER,
+				  kkStatus		OCTET STRING,
+	  			  kkStatusFlag		INTEGER,
+				  kkAssignment		OCTET STRING,
+				  kkUsability		INTEGER,
+				  kkPolarity		INTEGER
+				}
+			
+					kkIndex		OBJECT-TYPE
+					SYNTAX 			INTEGER(1..32)
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of control contact."
+					::=  			{ kkEntry 1}
+--состояние контрольного контакта - текст
+					kkStatus  	OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"control contact status text."
+					::=  			{ kkEntry 2}
+--состояние контрольного контакта (0 - норма, 1 - авария)					
+					kkStatusFlag  	OBJECT-TYPE
+					SYNTAX 			INTEGER 
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"control contact status (0 - normal, 1 - alarm)"
+					::=  			{ kkEntry 3}
+--назначение контрольного контакта - текст
+					kkAssignment  	OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"control contact status text."
+					::=  			{ kkEntry 4}
+--используемость контрольного контакта (0 - не используется, 1 - используется)					
+					kkUsability  	OBJECT-TYPE
+					SYNTAX 			INTEGER 
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"control contact usability (0 - not used, 1 - used)"
+					::=  			{ kkEntry 5}
+--полярность контрольного контакта (0 - нормально замкнутый, 1 - нормально разомкнутый)					
+					kkPolarity  	OBJECT-TYPE
+					SYNTAX 			INTEGER 
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"control contact polarity (0 - normal close, 1 - normal open)"
+					::=  			{ kkEntry 6}
+
+--Трапы
+		powerSystemTraps OBJECT IDENTIFIER ::= { powerSystem 7 } 
+--Группа аварийных событий
+		  negativeTraps OBJECT IDENTIFIER ::= { powerSystemTraps 1 }
+--Критическое аварийное сообщение
+			criticalTrap NOTIFICATION-TYPE
+			OBJECTS {trapAlarmText}
+    			STATUS  		current			
+	    		DESCRIPTION      "Critical alarm"
+     			::= { negativeTraps 1 }
+--Важное аварийное сообщение
+			majorTrap NOTIFICATION-TYPE
+			OBJECTS {trapAlarmText}
+    			STATUS  current
+	    		DESCRIPTION      "Major alarm"
+     			::= { negativeTraps 2 }
+--Менее важное аварийное сообщение
+			minorTrap NOTIFICATION-TYPE
+			OBJECTS {trapAlarmText}
+    			STATUS  current
+	    		DESCRIPTION      "Minor alarm"
+     			::= { negativeTraps 3 }
+--Позитивное событие, отменяет 1 или несколько аварийных		
+		  positiveTrap NOTIFICATION-TYPE
+		    OBJECTS {trapAlarmText}
+    		    STATUS  current
+    		    DESCRIPTION      "Positive alarm"
+     		    ::= { powerSystemTraps 2 }
+			  
+--Очищающее событие, соответствует отсутствию аварийных сообщений		
+		    clearTrap NOTIFICATION-TYPE
+		    OBJECTS {trapAlarmText}
+    		    STATUS  current
+    		    DESCRIPTION      "No alarms in system"
+     		    ::= { powerSystemTraps 3 }
+
+--Прекращение аварийного события, отменяет 1 аварийное, текст совпадает		
+		    closeNegativeTrap NOTIFICATION-TYPE
+		    OBJECTS {trapAlarmText}
+    		    STATUS  current
+    		    DESCRIPTION      " "
+     		    ::= { powerSystemTraps 4 }
+ 
+--Таблица текстового представления событий
+		  trapAlarmTable OBJECT-TYPE
+		  SYNTAX      		SEQUENCE OF TrapAlarmEntry
+		  MAX-ACCESS  		not-accessible
+		  STATUS      		current
+		  DESCRIPTION		"A list of trap text"
+		  ::= { powerSystemTraps 10 }
+
+				trapAlarmEntry OBJECT-TYPE
+				SYNTAX			TrapAlarmEntry
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of trap text"
+				INDEX   		{ trapAlarmIndex }
+				::= { trapAlarmTable 1 }
+
+				TrapAlarmEntry ::=
+				SEQUENCE {
+				  trapAlarmIndex	INTEGER,
+	  			  trapAlarmText		OCTET STRING
+				}
+			
+					trapAlarmIndex	OBJECT-TYPE
+					SYNTAX 			INTEGER(1..32768)
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of trap text."
+					::=  			{ trapAlarmEntry 1}
+--Текст извещения
+					trapAlarmText  	OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 	"Trap text."
+					::=  			{ trapAlarmEntry 2}
+					
+--Термореле
+		termoRelay OBJECT IDENTIFIER ::={powerSystem 8}
+--Параметры термореле
+		  termoRelayParam OBJECT IDENTIFIER ::={termoRelay 1}			
+--Количество термореле (1...8)
+			termoRelayCount  OBJECT-TYPE
+			SYNTAX 			INTEGER
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Number of Thermo Relays"
+			::=  			{ termoRelayParam 1}
+
+--Таблица параметров каждого термореле
+			termoRelayTable OBJECT-TYPE
+			SYNTAX      		SEQUENCE OF TermoRelayEntry
+			MAX-ACCESS  		not-accessible
+			STATUS      		current
+			DESCRIPTION		"A list of Thermo Relays parameters"
+			::= { termoRelay 2 }
+
+				termoRelayEntry OBJECT-TYPE
+				SYNTAX			TermoRelayEntry
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of Thermo Relays parameters."
+				INDEX   		{ termoRelayIndex }
+				::= { termoRelayTable 1 }
+
+				TermoRelayEntry ::=
+				SEQUENCE {
+				  termoRelayIndex			INTEGER,
+	  			  termoRelayMode			OCTET STRING,
+	  			  termoRelayHighTemperature		OCTET STRING,
+	  			  termoRelayLowTemperature		OCTET STRING,
+	  			  termoRelayMeasuredTemperature		OCTET STRING,
+	  			  termoRelayStatus			INTEGER				  
+				}
+			
+					termoRelayIndex	OBJECT-TYPE
+					SYNTAX 			INTEGER(1..32)
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of Thermo Relays."
+					::=  			{ termoRelayEntry 1}
+--Режим работы термореле  охлаждение\нагрев\норма
+					termoRelayMode  OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Mode of Thermo Relay"
+					::=  			{ termoRelayEntry 2 }
+--Верхняя температура термореле
+					termoRelayHighTemperature  OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Thermo Relay high temperature"
+					::=  			{ termoRelayEntry 3 }
+--Нижняя температура термореле
+					termoRelayLowTemperature  OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Thermo Relay low temperature"
+					::=  			{ termoRelayEntry 4 }
+--Измеренная температура термореле
+					termoRelayMeasuredTemperature  OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Thermo Relay measured temperature"
+					::=  			{ termoRelayEntry 5 }
+--Состояние термореле (ВКЛ\ВЫКЛ)
+					termoRelayStatus  OBJECT-TYPE
+					SYNTAX 			INTEGER
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Status of Thermo Relay"
+					::=  			{ termoRelayEntry 6 }
+--Таймеры
+		timer OBJECT IDENTIFIER ::={powerSystem 9}
+--Параметры термореле
+		  timerParam OBJECT IDENTIFIER ::={timer 1}			
+--Количество таймеров (1...4)
+			timerCount  OBJECT-TYPE
+			SYNTAX 			INTEGER
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Number of Timers"
+			::=  			{ timerParam 1}
+
+--Таблица параметров каждого таймера
+			timerTable OBJECT-TYPE
+			SYNTAX      		SEQUENCE OF TimerEntry
+			MAX-ACCESS  		not-accessible
+			STATUS      		current
+			DESCRIPTION		"A list of Timers parameters"
+			::= { timer 2 }
+
+				timerEntry OBJECT-TYPE
+				SYNTAX			TimerEntry
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of Timers parameters."
+				INDEX   		{ timerIndex }
+				::= { timerTable 1 }
+
+				TimerEntry ::=
+				SEQUENCE {
+				  timerIndex				INTEGER,
+				  timerMode				OCTET STRING,
+	  			  timerPeriod			 	INTEGER,
+	  			  timerPeriodUnit			OCTET STRING,
+	  			  timerDuration				INTEGER,
+	  			  timerDurationUnit			OCTET STRING,
+	  			  timerTime				OCTET STRING,
+				  timerRelayStatus			INTEGER
+				}
+			
+					timerIndex	OBJECT-TYPE
+					SYNTAX 			INTEGER(1..32)
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of Timers."
+					::=  			{ timerEntry 1}
+--Режим работы таймера
+					timerMode		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Timer mode"
+					::=  			{ timerEntry 2 }					
+--Период
+					timerPeriod		OBJECT-TYPE
+					SYNTAX 			INTEGER
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Period"
+					::=  			{ timerEntry 3 }
+--Единица измерения периода (сек, мин, час, день)
+					timerPeriodUnit		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Period unit"
+					::=  			{ timerEntry 4 }
+--Длительность включенного состояния реле таймера
+					timerDuration		OBJECT-TYPE
+					SYNTAX 			INTEGER
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Duration"
+					::=  			{ timerEntry 5 }
+--Единица измерения длительности (сек, мин, час, день)
+					timerDurationUnit	OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Duration unit"
+					::=  			{ timerEntry 6 }
+--Отсчет времени до переключения реле таймера
+					timerTime		OBJECT-TYPE
+					SYNTAX 			INTEGER
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Time"
+					::=  			{ timerEntry 7 }
+--Состояние реле таймера (ВКЛ\ВЫКЛ)
+					timerRelayStatus	OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Timer relay status"
+					::=  			{ timerEntry 8 }
+
+--Супервизоры сети
+		svAc OBJECT IDENTIFIER ::={powerSystem 10}
+--Параметры супервизора сети
+		  svAcParam OBJECT IDENTIFIER ::={svAc 1}			
+--Количество супервизоров сети (1...4)
+			svAcCount  OBJECT-TYPE
+			SYNTAX 			INTEGER
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Number of AC supervisor"
+			::=  			{ svAcParam 1}
+
+--Таблица параметров каждого супервизора сети
+			svAcTable OBJECT-TYPE
+			SYNTAX      		SEQUENCE OF SvAcEntry
+			MAX-ACCESS  		not-accessible
+			STATUS      		current
+			DESCRIPTION		"A list of AC supervisors parameters"
+			::= { svAc 2 }
+
+				svAcEntry OBJECT-TYPE
+				SYNTAX			SvAcEntry
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of AC supervisors parameters."
+				INDEX   		{ svAcIndex }
+				::= { svAcTable 1 }
+
+				SvAcEntry ::=
+				SEQUENCE {
+				  svAcIndex				INTEGER,
+				  svAcConnection			INTEGER,
+	  			  svAcVoltageA			 	OCTET STRING,
+	  			  svAcVoltageB				OCTET STRING,
+	  			  svAcVoltageC				OCTET STRING,
+	  			  svAcCurrentA				OCTET STRING,
+	  			  svAcCurrentB				OCTET STRING,
+				  svAcCurrentC				OCTET STRING
+				}
+			
+					svAcIndex		OBJECT-TYPE
+					SYNTAX 			INTEGER(1..16)
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of AC supervisors."
+					::=  			{ svAcEntry 1}
+--Наличие связи контроллера с супервизором сети
+					svAcConnection		OBJECT-TYPE
+					SYNTAX 			INTEGER
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"0 - connection absent, 1 - connection present"
+					::=  			{ svAcEntry 2 }	
+--Напряжение фазы А
+					svAcVoltageA		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Phase A voltage"
+					::=  			{ svAcEntry 3 }	
+--Напряжение фазы B
+					svAcVoltageB		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Phase B voltage"
+					::=  			{ svAcEntry 4 }	
+--Напряжение фазы C
+					svAcVoltageC		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Phase A voltage"
+					::=  			{ svAcEntry 5 }	
+--Ток фазы А
+					svAcCurrentA		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Phase A current"
+					::=  			{ svAcEntry 6 }	
+--Ток фазы B
+					svAcCurrentB		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Phase B current"
+					::=  			{ svAcEntry 7 }	
+--Ток фазы C
+					svAcCurrentC		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Phase C current"
+					::=  			{ svAcEntry 8 }						
+
+--Контрольные контакты контроллера
+		controlContact OBJECT IDENTIFIER ::={powerSystem 11}
+--Параметры контрольных контактов
+		  conParam OBJECT IDENTIFIER ::={controlContact 1}			
+--Количество контрольных контактов
+			conCount  	OBJECT-TYPE
+			SYNTAX 			INTEGER
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Number of control contact"
+			::=  			{ conParam 1}
+
+--Таблица состояния контрольных контактов
+			conTable 	OBJECT-TYPE
+			SYNTAX      		SEQUENCE OF ConEntry
+			MAX-ACCESS  		not-accessible
+			STATUS      		current
+			DESCRIPTION		"A list of control contact status"
+			::= { controlContact 2 }
+				
+			conEntry OBJECT-TYPE
+				SYNTAX			ConEntry
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of control contact status."
+				INDEX   		{ conIndex }
+				::= { conTable 1 }
+				
+				ConEntry ::=
+				SEQUENCE {
+				  conIndex		INTEGER,
+				  conStatus		OCTET STRING,
+	  			  conStatusFlag		INTEGER,
+				  conAssignment		OCTET STRING,
+				  conUsability		INTEGER,
+				  conPolarity		INTEGER
+				}
+			
+					conIndex		OBJECT-TYPE
+					SYNTAX 			INTEGER(1..32)
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of control contact."
+					::=  			{ conEntry 1}
+--состояние контрольного контакта - текст
+					conStatus  	OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"control contact status text."
+					::=  			{ conEntry 2}
+--состояние контрольного контакта (0 - норма, 1 - авария)					
+					conStatusFlag  	OBJECT-TYPE
+					SYNTAX 			INTEGER 
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"control contact status (0 - normal, 1 - alarm)"
+					::=  			{ conEntry 3}
+--назначение контрольного контакта - текст
+					conAssignment  	OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"control contact status text."
+					::=  			{ conEntry 4}
+--используемость контрольного контакта (0 - не используется, 1 - используется)					
+					conUsability  	OBJECT-TYPE
+					SYNTAX 			INTEGER 
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"control contact usability (0 - not used, 1 - used)"
+					::=  			{ conEntry 5}
+--полярность контрольного контакта (0 - нормально замкнутый, 1 - нормально разомкнутый)					
+					conPolarity  	OBJECT-TYPE
+					SYNTAX 			INTEGER 
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"control contact polarity (0 - normal close, 1 - normal open)"
+					::=  			{ conEntry 6}
+
+--Счетчики электроэнергии
+		electricMeter OBJECT IDENTIFIER ::={powerSystem 12}
+--Параметры счетчиков электроэнергии
+		  eMeterParam OBJECT IDENTIFIER ::={electricMeter 1}			
+--Наименование счетчика
+			eMeterName  OBJECT-TYPE
+			SYNTAX 			OCTET STRING (SIZE (0..255))
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Electric meter name"
+			::=  			{ eMeterParam 1}
+		  
+--Количество тарифов счетчика
+			eMeterTariffNumber  OBJECT-TYPE
+			SYNTAX 			INTEGER
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Number of tarriffs"
+			::=  			{ eMeterParam 2}
+--Наличие связи со счетчиком (1-есть, 0-нет)
+			eMeterConnection  OBJECT-TYPE
+			SYNTAX 			INTEGER
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"0 - connection absent, 1 - connection present"
+			::=  			{ eMeterParam 3}
+			
+--Серийный номер
+			eMeterSerialNumber  OBJECT-TYPE
+			SYNTAX 			INTEGER
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Serial Number"
+			::=  			{ eMeterParam 4}
+			
+--Мгновенная мощность - для 3 фазного счетчика - суммарная по 3 фазам
+			eMeterSumMomentPower  OBJECT-TYPE
+			SYNTAX 			INTEGER
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"SerialNumber"
+			::=  			{ eMeterParam 5}
+			
+--Таблица параметров каждого счетчика
+		  eMeterTable OBJECT-TYPE
+		  SYNTAX      		SEQUENCE OF EMeterEntry
+		  MAX-ACCESS  		not-accessible
+		  STATUS      		current
+		  DESCRIPTION		"A list of electric meter parameters"
+		  ::= { electricMeter 2 }
+
+				eMeterEntry OBJECT-TYPE
+				SYNTAX			EMeterEntry
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of electric meter parameters."
+				INDEX   		{ eMeterIndex }
+				::= { eMeterTable 1 }
+
+				EMeterEntry ::=
+				SEQUENCE {
+				  eMeterIndex				INTEGER,
+				  eMeterPower				OCTET STRING
+				}
+			
+					eMeterIndex		OBJECT-TYPE
+					SYNTAX 			INTEGER(1..16)
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of ."
+					::=  			{ eMeterEntry 1}
+--Показания счетчика по тарифам
+					eMeterPower		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Power"
+					::=  			{ eMeterEntry 2 }
+--Таблица напряжений и токов по фазам
+		  eMeterTableUI OBJECT-TYPE
+		  SYNTAX      		SEQUENCE OF EMeterEntryUI
+		  MAX-ACCESS  		not-accessible
+		  STATUS      		current
+		  DESCRIPTION		"A list of electric meter current and voltage"
+		  ::= { electricMeter 3 }
+
+				eMeterEntryUI OBJECT-TYPE
+				SYNTAX			EMeterEntryUI
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of electric meter parameters."
+				INDEX   		{ eMeterIndexUI }
+				::= { eMeterTableUI 1 }
+
+				EMeterEntryUI ::=
+				SEQUENCE {
+				  eMeterIndexUI				INTEGER,
+				  eMeterCurrent				OCTET STRING,
+				  eMeterVoltage				OCTET STRING,
+				  eMeterMomentPower			OCTET STRING
+				}
+			
+					eMeterIndexUI		OBJECT-TYPE
+					SYNTAX 			INTEGER(1..3)
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of ."
+					::=  			{ eMeterEntryUI 1}
+--Ток
+					eMeterCurrent		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Current"
+					::=  			{ eMeterEntryUI 2 }
+--Напряжение
+					eMeterVoltage		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Current"
+					::=  			{ eMeterEntryUI 3 }
+--Мгновенная мощность
+					eMeterMomentPower		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Current"
+					::=  			{ eMeterEntryUI 4 }
+
+--Супервизоры батарей
+		svBat OBJECT IDENTIFIER ::={powerSystem 13}
+--Параметры супервизоров батарей
+		  svBatParam OBJECT IDENTIFIER ::={svBat 1}			
+--Количество супервизоров батарей (1...4)
+			svBatCount  OBJECT-TYPE
+			SYNTAX 			INTEGER
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Number of battery supervisor"
+			::=  			{ svBatParam 1}
+--Количество секций батарей (1...6)
+			svSectionCount  OBJECT-TYPE
+			SYNTAX 			INTEGER
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Number of sections battery"
+			::=  			{ svBatParam 2}
+--Режим работы супервизора батарей (0 - поэлементный, 1 - контроль относительно средней точки)
+			svBatMode  OBJECT-TYPE
+			SYNTAX 			INTEGER
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Mode of battery supervisor (0 - elementwise control, 1 - control by the midpoint"
+			::=  			{ svBatParam 3}
+--Таблица параметров каждого супервизора батарей
+			svBatTable OBJECT-TYPE
+			SYNTAX      		SEQUENCE OF SvBatEntry
+			MAX-ACCESS  		not-accessible
+			STATUS      		current
+			DESCRIPTION		"A list of battery supervisors parameters"
+			::= { svBat 2 }
+
+				svBatEntry OBJECT-TYPE
+				SYNTAX			SvBatEntry
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of battery supervisors parameters."
+				INDEX   		{ svBatIndex }
+				::= { svBatTable 1 }
+
+				SvBatEntry ::=
+				SEQUENCE {
+				  svBatIndex				INTEGER,
+				  svBatConnection			INTEGER,
+	  			  svBatVoltageI			 	OCTET STRING,
+	  			  svBatVoltageII			OCTET STRING,
+	  			  svBatVoltageIII			OCTET STRING,
+	  			  svBatVoltageIV			OCTET STRING,
+	  			  svBatVoltageV				OCTET STRING,
+				  svBatVoltageVI			OCTET STRING,
+				  svBatFullVoltage			OCTET STRING,
+				  svBatTemperature			OCTET STRING
+				}
+			
+					svBatIndex	OBJECT-TYPE
+					SYNTAX 			INTEGER(1..16)
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of battery supervisors."
+					::=  			{ svBatEntry 1}
+--Наличие связи контроллера с супервизором батарей
+					svBatConnection		OBJECT-TYPE
+					SYNTAX 			INTEGER
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"0 - connection absent, 1 - connection present"
+					::=  			{ svBatEntry 2 }	
+--Напряжение секции 1
+					svBatVoltageI		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Section 1 voltage"
+					::=  			{ svBatEntry 3 }	
+--Напряжение секции 2
+					svBatVoltageII		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Section 2 voltage"
+					::=  			{ svBatEntry 4 }	
+--Напряжение секции 3
+					svBatVoltageIII		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Section 3 voltage"
+					::=  			{ svBatEntry 5 }	
+--Напряжение секции 4
+					svBatVoltageIV		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Section 4 voltage"
+					::=  			{ svBatEntry 6 }	
+--Напряжение секции 5
+					svBatVoltageV		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Section 5 voltage"
+					::=  			{ svBatEntry 7 }	
+--Напряжение секции 6
+					svBatVoltageVI		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Section 6 voltage"
+					::=  			{ svBatEntry 8 }						
+--Полное напряжение батареи
+					svBatFullVoltage	OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Full battery voltage"
+					::=  			{ svBatEntry 9 }	
+--Температура батареи
+					svBatTemperature	OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Battery temperature"
+					::=  			{ svBatEntry 10 }	
+
+--Модули Пельтье
+		modTEC OBJECT IDENTIFIER ::={powerSystem 14}
+--Параметры супервизоров батарей
+		  modTECParam OBJECT IDENTIFIER ::={modTEC 1}			
+--Количество модулей Пельтье (1...2)
+			modTECCount  OBJECT-TYPE
+			SYNTAX 			INTEGER
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Number of TEC modules"
+			::=  			{ modTECParam 1}
+
+--Таблица параметров каждого модуля Пельтье
+			modTECTable OBJECT-TYPE
+			SYNTAX      		SEQUENCE OF ModTECEntry
+			MAX-ACCESS  		not-accessible
+			STATUS      		current
+			DESCRIPTION		"A list of TEC modules parameters"
+			::= { modTEC 2 }
+
+				modTECEntry OBJECT-TYPE
+				SYNTAX			ModTECEntry
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of TEC modules parameters."
+				INDEX   		{ modTECIndex }
+				::= { modTECTable 1 }
+
+				ModTECEntry ::=
+				SEQUENCE {
+				  modTECIndex				INTEGER,
+				  modTECConnection			INTEGER,
+				  modTECStatusNumber			INTEGER,
+	  			  modTECStatusText		 	OCTET STRING,
+	  			  modTECCoolingPower			OCTET STRING,
+	  			  modTECHeatingPower			OCTET STRING,
+	  			  modTECIntTemper			OCTET STRING,
+	  			  modTECExtTemper			OCTET STRING,
+				  modTECIntRadITemper			OCTET STRING,
+				  modTECExtRadITemper			OCTET STRING,
+				  modTECIntRadIITemper			OCTET STRING,
+				  modTECExtRadIITemper			OCTET STRING
+				}
+			
+					modTECIndex		OBJECT-TYPE
+					SYNTAX 			INTEGER
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of TEC module supervisors."
+					::=  			{ modTECEntry 1}
+--Наличие связи контроллера с модулем Пельтье
+					modTECConnection	OBJECT-TYPE
+					SYNTAX 			INTEGER(0..1)
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"0 - connection absent, 1 - connection present"
+					::=  			{ modTECEntry 2 }	
+--Состояние модуля Пельтье: 0 - Неопределенное,1 - Температура в норме,2 - Охлаждение,3 - Нагрев
+-- 4 - Продувка радиаторов, 5 - Теплообменик, 6 - Перегрев радиатора, 7 - Пожарная блокировка
+-- 8 - Блокировка контрольным контактом, 9 - Отказ датчика температуры)
+					modTECStatusNumber	OBJECT-TYPE
+					SYNTAX 			INTEGER(0..31)
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Number of TEC module status"
+					::=  			{ modTECEntry 3 }	
+--Состояние модуля Пельтье в текстовом виде
+					modTECStatusText	OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Text of TEC module status"
+					::=  			{ modTECEntry 4 }	
+--Мощность охлаждения
+					modTECCoolingPower	OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Cooling Power"
+					::=  			{ modTECEntry 5 }	
+--Мощность нагрева
+					modTECHeatingPower	OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Heating Power"
+					::=  			{ modTECEntry 6 }	
+--Температура внутреннего воздуха
+					modTECIntTemper		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Internal air temperature"
+					::=  			{ modTECEntry 7 }	
+--Температура внешнего воздуха
+					modTECExtTemper		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"External air temperature"
+					::=  			{ modTECEntry 8 }						
+--Температура 1го внутреннего радиатора
+					modTECIntRadITemper	OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Internal radiator 1 temperature"
+					::=  			{ modTECEntry 9 }	
+--Температура 1го внешнего радиатора
+					modTECExtRadITemper	OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"External radiator 1 temperature"
+					::=  			{ modTECEntry 10 }		
+--Температура 2го внутреннего радиатора
+					modTECIntRadIITemper	OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Internal radiator 2 temperature"
+					::=  			{ modTECEntry 11 }	
+--Температура 2го внешнего радиатора
+					modTECExtRadIITemper	OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"External radiator 2 temperature"
+					::=  			{ modTECEntry 12 }		
+
+--Логические операторы
+		logicOperator OBJECT IDENTIFIER ::={powerSystem 15}
+--Параметры логических операторов
+		  logicOperatorParam OBJECT IDENTIFIER ::={logicOperator 1}			
+--Количество логических операторов (0...16)
+			logicOperatorCount  OBJECT-TYPE
+			SYNTAX 			INTEGER
+			MAX-ACCESS 		read-only
+			STATUS 			current
+			DESCRIPTION 		"Number of logic operators"
+			::=  			{ logicOperatorParam 1}
+
+--Таблица параметров каждого логического оператора
+			logicOperatorTable OBJECT-TYPE
+			SYNTAX      		SEQUENCE OF LogicOperatorEntry
+			MAX-ACCESS  		not-accessible
+			STATUS      		current
+			DESCRIPTION		"A list of logic operators parameters"
+			::= { logicOperator 2 }
+
+				logicOperatorEntry OBJECT-TYPE
+				SYNTAX			LogicOperatorEntry
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of logic operators parameters."
+				INDEX   		{ logicOperatorIndex }
+				::= { logicOperatorTable 1 }
+
+				LogicOperatorEntry ::=
+				SEQUENCE {
+				  logicOperatorIndex			INTEGER,
+				  logicOperatorDescription		OCTET STRING,
+				  logicOperatorState			INTEGER
+	  			  }
+			
+					logicOperatorIndex	OBJECT-TYPE
+					SYNTAX 			INTEGER
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of logic operator."
+					::=  			{ logicOperatorEntry 1}
+--Текстовое описание назначения логического оператора
+					logicOperatorDescription OBJECT-TYPE
+					SYNTAX 			OCTET STRING
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Index of logic operator"
+					::=  			{ logicOperatorEntry 2 }	
+--Состояние логического оператора 0 - выключен, 1 - включен
+					logicOperatorState	OBJECT-TYPE
+					SYNTAX 			INTEGER(0..1)
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"logic operator state - 0 - OFF, 1 - ON"
+					::=  			{ logicOperatorEntry 3 }	
+	
+--Параметры доступа. Чтобы получить доступ к изменению параметров read-write, необходимо отправить пароль по умолчанию 1111
+
+		access OBJECT IDENTIFIER ::={powerSystem 99}
+		   accessParam OBJECT IDENTIFIER ::={access 1}
+
+--Пароль
+			password OBJECT-TYPE    
+	    			SYNTAX      OCTET STRING (SIZE (0..255))
+	    			MAX-ACCESS  read-write
+	    			STATUS      current
+	    			DESCRIPTION "Password"
+	    			::= { accessParam 1 } 
+--Состояние доступа 1- разрешен, 0 - запрещен
+			status-access OBJECT-TYPE    
+	    			SYNTAX      INTEGER
+	    			MAX-ACCESS  read-write
+	    			STATUS      current
+	    			DESCRIPTION "Access status. 0 -access disable, 1 - access enable"
+	    			::= { accessParam 2 } 
+
+--Параметры TCP\IP
+		tcpip OBJECT IDENTIFIER ::={powerSystem 100}
+		   tcpipParam OBJECT IDENTIFIER ::={tcpip 1}
+
+--IP адрес
+			ipAdress OBJECT-TYPE    
+	    			SYNTAX      OCTET STRING (SIZE (0..255))
+	    			MAX-ACCESS  read-write
+	    			STATUS      current
+	    			DESCRIPTION "IP adress XXX.XXX.XXX.XXX"
+	    			::= { tcpipParam 1 }
+
+--Маска подсети
+			mask OBJECT-TYPE    
+	    			SYNTAX      OCTET STRING (SIZE (0..255))
+	    			MAX-ACCESS  read-write
+	    			STATUS      current
+	    			DESCRIPTION "Mask XXX.XXX.XXX.XXX"
+	    			::= { tcpipParam 2 }
+
+--IP адрес
+			gateway OBJECT-TYPE    
+	    			SYNTAX      OCTET STRING (SIZE (0..255))
+	    			MAX-ACCESS  read-write
+	    			STATUS      current
+	    			DESCRIPTION "Gateway XXX.XXX.XXX.XXX"
+	    			::= { tcpipParam 3 }					
+					
+--Параметры snmp
+		   snmpParam OBJECT IDENTIFIER ::={tcpip 2}
+		     snmpSetting OBJECT IDENTIFIER ::={snmpParam 1}	
+  		   	language OBJECT-TYPE    
+	    			SYNTAX      OCTET STRING (SIZE (0..255))
+	    			MAX-ACCESS  read-write
+	    			STATUS      current
+	    			DESCRIPTION "Language of snmp message RU - russian EN - english"
+	    			::= { snmpSetting 1 } 
+  		   	trapAdrNumber OBJECT-TYPE    
+	    			SYNTAX      OCTET STRING (SIZE (0..255))
+	    			MAX-ACCESS  read-write
+	    			STATUS      current
+	    			DESCRIPTION "Number of addresses for trap"
+	    			::= { snmpSetting 2 }
+  		   	readCommunityName OBJECT-TYPE    
+	    			SYNTAX      OCTET STRING (SIZE (0..255))
+	    			MAX-ACCESS  read-write
+	    			STATUS      current
+	    			DESCRIPTION "Read community"
+	    			::= { snmpSetting 3 }
+  		   	writeCommunityName OBJECT-TYPE    
+	    			SYNTAX      OCTET STRING (SIZE (0..255))
+	    			MAX-ACCESS  read-write
+	    			STATUS      current
+	    			DESCRIPTION "Write community"
+	    			::= { snmpSetting 4 }
+			--Включение\выключение единиц измерения в текстах 1 - вкл, 0 - выкл
+			presenceUnitsFlag OBJECT-TYPE    
+	    			SYNTAX      INTEGER
+	    			MAX-ACCESS  read-write
+	    			STATUS      current
+	    			DESCRIPTION "Availability of measurement units. 1 - present, 0 - absent"
+	    			::= { snmpSetting 5 }	
+--Таблица агентов, принимающих трапы
+		    trapReceiverTable OBJECT-TYPE
+		    SYNTAX      		SEQUENCE OF TrapReceiverEntry
+		    MAX-ACCESS  		not-accessible
+		    STATUS      		current
+		    DESCRIPTION		"A list of trap receivers"
+		    ::= { snmpParam 2 }
+
+				trapReceiverEntry OBJECT-TYPE
+				SYNTAX			TrapReceiverEntry
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of trap receivers."
+				INDEX   		{ trapReceiverIndex }
+				::= { trapReceiverTable 1 }
+
+				TrapReceiverEntry ::=
+				SEQUENCE {
+				  trapReceiverIndex		INTEGER,
+	  			  trapReceiverIPAddr		OCTET STRING
+				}
+			
+					trapReceiverIndex	OBJECT-TYPE
+					SYNTAX 			INTEGER(1..16)
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of trap receiver."
+					::=  			{ trapReceiverEntry 1}
+--IP адрес агента ХХХ.ХХХ.ХХХ.ХХХ
+					trapReceiverIPAddr  	OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"IP address of trap receiver ХХХ.ХХХ.ХХХ.ХХХ."
+					::=  			{ trapReceiverEntry 2 }
+
+
+--Данные журнала событий
+		systemLog OBJECT IDENTIFIER ::= {powerSystem 101}
+		  sysLogParam OBJECT IDENTIFIER ::= {systemLog 1}
+--Количество событий в журнале
+		  	logNumber OBJECT-TYPE
+		  	SYNTAX 		INTEGER
+		  	MAX-ACCESS 	read-only
+		  	STATUS 		current
+		  	DESCRIPTION 	"Number of events"
+     		  	::= { sysLogParam 1 }
+--Таблица событий
+			sysLogTable 	OBJECT-TYPE
+			SYNTAX      		SEQUENCE OF SysLogEntry
+			MAX-ACCESS  		not-accessible
+			STATUS      		current
+			DESCRIPTION		"A list of event"
+			::= { systemLog 2 }
+
+				sysLogEntry OBJECT-TYPE
+				SYNTAX			SysLogEntry
+				MAX-ACCESS		not-accessible
+				STATUS			current
+				DESCRIPTION		"An entry containing table of events."
+				INDEX   		{ sysLogIndex }
+				::= { sysLogTable 1 }
+
+				SysLogEntry ::=
+				SEQUENCE {
+				  sysLogIndex				INTEGER,
+	  			  sysLogText			 	OCTET STRING
+	  			}
+
+					sysLogIndex		OBJECT-TYPE
+					SYNTAX 			INTEGER(1..32768)
+					MAX-ACCESS 		not-accessible
+					STATUS 			current
+					DESCRIPTION 		"Index of event."
+					::=  			{ sysLogEntry 1}
+--Текст события
+					sysLogText		OBJECT-TYPE
+					SYNTAX 			OCTET STRING (SIZE (0..255))
+					MAX-ACCESS 		read-only
+					STATUS 			current
+					DESCRIPTION 		"Event text"
+					::=  			{ sysLogEntry 2 }			
+END

@@ -1,0 +1,2238 @@
+MLINK-SDH-STM1-MIB DEFINITIONS ::= BEGIN
+
+--IMPORTS
+--    enterprises, MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE, Integer32, IpAddress
+--        FROM SNMPv2-SMI
+--    MODULE-COMPLIANCE, OBJECT-GROUP, NOTIFICATION-GROUP
+--        FROM SNMPv2-CONF
+--    Counter
+--            FROM RFC1155-SMI
+--    PhysAddress, DisplayString
+--            FROM RFC1213-MIB
+--    TRAP-TYPE
+--            FROM RFC-1215;
+
+IMPORTS
+   enterprises, Gauge, TimeTicks, IpAddress, Counter FROM RFC1155-SMI
+   DisplayString, PhysAddress                        FROM SNMPv2-TC
+   OBJECT-TYPE                                       FROM RFC-1212
+   TRAP-TYPE                                         FROM RFC-1215;
+--    enterprises, IpAddress, Counter
+--            FROM RFC1155-SMI
+--    OBJECT-TYPE
+--            FROM RFC-1212
+--    PhysAddress, DisplayString
+--            FROM RFC1213-MIB
+--    TRAP-TYPE
+--            FROM RFC-1215;
+
+Microlink MODULE-IDENTITY
+        LAST-UPDATED "201307311000Z"
+        ORGANIZATION "JCS IRBIS-T "
+        CONTACT-INFO "Post code 300012, RUSSIA, Tula, Gorodskoy st., build 39"
+        DESCRIPTION  "The MIB module to describe IRBIS-T UPS"
+        ::= { enterprises 28568 }
+
+SDH					OBJECT IDENTIFIER ::= { Microlink 3 }
+MLink-STM			OBJECT IDENTIFIER ::= { SDH 1 }
+MLink-STM-1			OBJECT IDENTIFIER ::= { MLink-STM 1 }
+SysInfo				OBJECT IDENTIFIER ::= { MLink-STM-1 1 }
+SysConfig			OBJECT IDENTIFIER ::= { MLink-STM-1 2 }
+SysState			OBJECT IDENTIFIER ::= { MLink-STM-1 3 }
+trap-bind 		    OBJECT IDENTIFIER ::= { MLink-STM-1 4 }
+commands			OBJECT IDENTIFIER ::= { MLink-STM-1 5 }
+
+------------------------
+-- 'SysInfo' Directory --
+------------------------
+
+sysType			OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION
+			"Device type."
+	::= { SysInfo 1 }
+
+sysHw_Version	OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION
+			"Device hardware version."
+	::= { SysInfo 2 }
+
+sysSw_Version	OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION
+			"Device software version."
+	::= { SysInfo 3 }
+
+sysSerial_Num	OBJECT-TYPE
+	SYNTAX  DisplayString
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION
+			"Device serial number."
+	::= { SysInfo 4 }
+
+sysFactoryCode	OBJECT-TYPE
+	SYNTAX  OCTET STRING (SIZE(8))
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION
+			"Device factory code."
+	::= { SysInfo 5 }
+
+---------------------------
+-- 'SysConfig' Directory --
+---------------------------
+
+HostIPConfig	OBJECT IDENTIFIER ::= { SysConfig  1 }
+CommonConfig	OBJECT IDENTIFIER ::= { SysConfig  2 }
+STM1Config		OBJECT IDENTIFIER ::= { SysConfig  3 }
+E1Config		OBJECT IDENTIFIER ::= { SysConfig  4 }
+EthConfig		OBJECT IDENTIFIER ::= { SysConfig  5 }
+SyncConfig		OBJECT IDENTIFIER ::= { SysConfig  6 }
+SNMPConfig		OBJECT IDENTIFIER ::= { SysConfig  7 }
+STPConfig		OBJECT IDENTIFIER ::= { SysConfig  8 }
+VLANConfig		OBJECT IDENTIFIER ::= { SysConfig  9 }
+QoSConfig		OBJECT IDENTIFIER ::= { SysConfig  10 }
+RateLimitConfig	OBJECT IDENTIFIER ::= { SysConfig  11 }
+
+---------------------------
+-- 'HostIPConfig' SubDirectory --
+
+HostIpAddress    OBJECT-TYPE
+	SYNTAX  IpAddress
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+			"The IP address of device."
+	::= { HostIPConfig 1 }
+
+HostPhysAddress    OBJECT-TYPE
+	SYNTAX  PhysAddress
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+			"The MAC address of device."
+	::= { HostIPConfig 2 }
+
+HostSubnetMask    OBJECT-TYPE
+	SYNTAX  IpAddress
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+			"The Subnet Mask."
+	::= { HostIPConfig 3 }
+
+HostGwIpAddress    OBJECT-TYPE
+	SYNTAX  IpAddress
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+			"The IP address of Default Gateway."
+	::= { HostIPConfig 4 }
+
+HostVLAN_ID    OBJECT-TYPE
+    SYNTAX  INTEGER (0..4095)
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+    		"VLAN ID of device (0-no VLAN, 1..4095 - VLAN_ID)"
+    ::= { HostIPConfig 5 }
+
+
+---------------------------
+-- 'CommonConfig' SubDirectory --
+
+GlobalSettings    OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+    		" Global settings for device (bitfield):
+			bits 31..3 - reserved; 
+			bit 2 - external XCK output ( 0 - disabled, 1 - enabled ); 
+			bits 1..0 - main RS-232 speed ( 0 - 57600, 1 - 9600, 2 - 19200, 3 - 57600 ) "
+    ::= { CommonConfig 1 }
+
+Net_ID    OBJECT-TYPE
+    SYNTAX  INTEGER (0..65535)
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+    		" RSTTL network ID "
+    ::= { CommonConfig 2 }
+
+RSTTL_mode    OBJECT-TYPE
+    SYNTAX  INTEGER (0..65535)
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+    		" RSTTL work mode (bitfield): 
+			bits 15..1 - reserved; 
+			bit 0 - RSTTL mode: 0 - master; 1 - slave "
+    ::= { CommonConfig 3 }
+
+ConsoleTimeout    OBJECT-TYPE
+    SYNTAX  INTEGER (0..255)
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+    		" Timeout for control inactivity of console users (0..59) - (1..60 min) "
+    ::= { CommonConfig 4 }
+
+
+---------------------------
+-- 'STM1Config' SubDirectory --
+
+STM1CfgTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF STM1CfgEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"The STM-1 Tributaries Configuration table."
+            ::= { STM1Config 1 }
+
+			stm1CfgEntry OBJECT-TYPE
+	            SYNTAX  STM1CfgEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the STM1 Tributaries Configuration table."
+	            INDEX { STM1CfgIndex }
+	            ::= { STM1CfgTable 1 }
+
+			STM1CfgEntry ::= SEQUENCE {
+				STM1CfgIndex
+					INTEGER,
+				STM1CfgConfig
+					INTEGER
+				}
+
+			STM1CfgIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each interface.  Its value ranges between 1 and number of available STM1 ports."
+	            ::= { stm1CfgEntry 1 }
+			
+			STM1CfgConfig    OBJECT-TYPE
+	            SYNTAX  INTEGER (0..65535)
+	            ACCESS  read-write
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Configuration options of STM1 interface (bitfield):
+						bits 15..3 - reserved;
+						bits 2..1 - Loopback mode: 0 - off, 1 - Local (system side), 2 - Remote (line side), 3 - reserved
+						bit 0 - Power: 0 - off, 1 - on "
+	            ::= { stm1CfgEntry 2 }
+
+STM1_VC12_SwTable    OBJECT-TYPE
+	SYNTAX  SEQUENCE OF STM1_VC12CfgEntry
+	ACCESS  not-accessible
+	STATUS  mandatory
+	DESCRIPTION
+            "The STM-1 VC-12 mapping table."
+	::= { STM1Config 2 }
+
+	stm1_VC12CfgEntry OBJECT-TYPE
+		SYNTAX  STM1CfgEntry
+		ACCESS  not-accessible
+		STATUS  mandatory
+		DESCRIPTION
+	            "An entry in the STM1 VC-12 mapping table."
+		INDEX { STM1_VC12CfgIndex }
+		::= { STM1_VC12_SwTable 1 }
+
+	STM1_VC12CfgEntry ::= SEQUENCE {
+		STM1_VC12CfgIndex
+			INTEGER,
+		STM1_VC12CfgConfig
+			INTEGER
+		}
+
+	STM1_VC12CfgIndex    OBJECT-TYPE
+		SYNTAX  INTEGER
+		ACCESS  read-only
+		STATUS  mandatory
+		DESCRIPTION
+	            "A unique value for each VC12.  First 63 entries for 1-st STM-1 interface, second 63 entries for 2nd STM-1."
+		::= { stm1_VC12CfgEntry 1 }
+	
+	STM1_VC12CfgConfig    OBJECT-TYPE
+		SYNTAX  INTEGER (0..65535)
+		ACCESS  read-write
+		STATUS  mandatory
+		DESCRIPTION
+	            " Configuration options of E1 interface (bitfield):
+				bit 15 - VC12 tract: 0 - free, 1 - busy;
+				bit 14..13 - Type of connection: 00 - another VC12, 01 - E1 port, 10 - Ethernet, 11 - reserve;
+				bit 12 - SNCP status: 0 - main VC12, 1 - reserved VC12 (for VC12 connected to E1 ports); 
+				bit 11..7 - reserved; 
+				bit 6 - STM1 number of destination VC12; 
+				bit 5..0 - destination: VC12 (0..63); E1 port (0..15); WAN port (0..1) "
+		::= { stm1_VC12CfgEntry 2 }
+
+MSP_ReservationCfg    OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+    		" Multiplex Section Protection settings (bitfield):
+			 bits 7..3 - reserved; 
+			 bit 2 - MSP revert mode: 0 - Non-revertive, 1 - revertive
+			 bit 1 - MSP direction mode: 0 - unidirectional, 1 - bidirectional
+			 bit 0 - MSP 1+1 Reservation: 0 - disabled, 1 - enabled (1st STM-1 is main, 2nd STM-1 is reserve) "
+    ::= { STM1Config 3 }
+
+MSP_WTR_time    OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+    		" MSP wait to restore time (60..720 seconds)"
+    ::= { STM1Config 4 }
+
+---------------------------
+-- 'E1Config' SubDirectory --
+
+E1CfgTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF E1CfgEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"The E1 Tributaries Configuration table."
+            ::= { E1Config 1 }
+
+			e1CfgEntry OBJECT-TYPE
+	            SYNTAX  E1StatusEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the E1 Tributaries Configuration table."
+	            INDEX { E1CfgIndex }
+	            ::= { E1CfgTable 1 }
+
+			E1CfgEntry ::= SEQUENCE {
+				E1CfgIndex
+					INTEGER,
+				E1CfgConfig
+					INTEGER
+				}
+
+			E1CfgIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each interface.  Its value ranges between 1 and number of available E1 ports."
+	            ::= { e1CfgEntry 1 }
+			
+			E1CfgConfig    OBJECT-TYPE
+	            SYNTAX  INTEGER (0..255)
+	            ACCESS  read-write
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Configuration options of E1 interface (bitfield):
+						bit 7 - POWER:    0 - disabled; 1 - enabled;
+						bit 6 - SNCP protection:    0 - disabled; 1 - enabled;
+						bit 5 - reserved; 
+						bit 4 - Remote loop (Framer data is looped): 0 - disabled; 1 - enabled; 
+						bit 3 - Local loop (line side looped): 0 - disabled; 1 - enabled; 
+						bits 2..0 - reserved "
+	            ::= { e1CfgEntry 2 }
+
+---------------------------
+-- 'EthConfig' SubDirectory --
+
+LAN_CfgTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF LAN_EthCfgEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"The LAN (Copper Ethernet) Ports Configuration table."
+            ::= { EthConfig 1 }
+
+			lan_EthCfgEntry OBJECT-TYPE
+	            SYNTAX  LAN_EthCfgEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the Copper Ethernet Ports Configuration table."
+	            INDEX { LAN_EthCfgIndex }
+	            ::= { LAN_CfgTable 1 }
+
+			LAN_EthCfgEntry ::= SEQUENCE {
+				LAN_EthCfgIndex
+					INTEGER,
+				LAN_EthCfgConfig
+					INTEGER
+				}
+
+			LAN_EthCfgIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each interface.  Its value ranges between 1 and number of LAN ports."
+	            ::= { lan_EthCfgEntry 1 }
+			
+			LAN_EthCfgConfig    OBJECT-TYPE
+	            SYNTAX  INTEGER (0..65535)
+	            ACCESS  read-write
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Configuration options of LAN port (bitfield):
+						bit 15 - POWER:    0 - OFF (power down); 1 - ON (normal operation);
+						bit 14 - Auto Negotiation:    0 - disabled; 1 - enabled;
+						bit 13 - Auto MDI/MDI-X:    0 - disabled; 1 - enabled;
+						bit 12 - Force MDI-X, valid only if bit10=0 (no auto MDI/MDI-X)):    0 - force MDI; 1 - force MDI-X;
+						bits 11..3 - reserved;
+						bit 2 - Duplex force, valid only if bit14=0 (no AN):   0 - force half duplex; 1 - force full duplex;
+						bits 1..0 - Speed force, valid only if bit14=0 (no AN):
+							00 - force 10Mbps; 01 - force 100Mbps; 10, 11 - reserved "
+	            ::= { lan_EthCfgEntry 2 }
+
+WAN_CfgTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF WAN_EthCfgEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"The WAN (Ethernet over STM) Ports Configuration table."
+            ::= { EthConfig 2 }
+
+			wan_EthCfgEntry OBJECT-TYPE
+	            SYNTAX  WAN_EthCfgEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the WAN Ports Configuration table."
+	            INDEX { WAN_EthCfgIndex }
+	            ::= { WAN_CfgTable 1 }
+
+			WAN_EthCfgEntry ::= SEQUENCE {
+				WAN_EthCfgIndex
+					INTEGER,
+				WAN_EthCfgConfig
+					INTEGER
+				}
+
+			WAN_EthCfgIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each interface.  Its value ranges between 1 and number of WAN ports."
+	            ::= { wan_EthCfgEntry 1 }
+			
+			WAN_EthCfgConfig    OBJECT-TYPE
+	            SYNTAX  INTEGER (0..65535)
+	            ACCESS  read-write
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Configuration options of WAN port (bitfield):
+						bits 15..1 - reserved;
+						bit 0 - Mode: 0 - non LCAS, 1 - LCAS "
+	            ::= { wan_EthCfgEntry 2 }
+
+
+---------------------------
+-- 'SyncConfig' SubDirectory --
+
+SyncMode    OBJECT-TYPE
+	SYNTAX  INTEGER (0..255)
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+	        " Global synchronization settings (bitfield):
+			bits 7..2 - reserved;
+			bit 1 - QL en mode (0 - QL disabled, 1 - QL enabled);
+			bit 0 - System sync mode (0 - automatic sync selection, 1 - Forced freerun mode) "
+	::= { SyncConfig 1 }
+
+Hold_off_time    OBJECT-TYPE
+	SYNTAX  INTEGER (0..255)
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+			"Hold off time for sync input (value from 3 to 18 in 100msec units) (300..1800msec)."
+	::= { SyncConfig 2 }
+
+Wait_to_restore_time  OBJECT-TYPE
+	SYNTAX 	INTEGER (0..255)
+	ACCESS  read-write
+	STATUS 	mandatory
+	DESCRIPTION 
+			"Wait to restore time for sync input (0..12 minutes)."
+	::= { SyncConfig 3 }
+
+SyncIn_CfgTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF SyncInCfgEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"Synchronization input ports configuration table."
+            ::= { SyncConfig 4 }
+
+			syncInCfgEntry OBJECT-TYPE
+	            SYNTAX  SyncInCfgEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the Sync Input Ports Configuration table."
+	            INDEX { SyncInCfgIndex }
+	            ::= { SyncIn_CfgTable 1 }
+
+			SyncInCfgEntry ::= SEQUENCE {
+				SyncInCfgIndex
+					INTEGER,
+				SyncInCfgConfig
+					INTEGER
+				}
+
+			SyncInCfgIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each sync input. It show priority of input. Its value ranges between 1 and 4."
+	            ::= { syncInCfgEntry 1 }
+			
+			SyncInCfgConfig    OBJECT-TYPE
+	            SYNTAX  INTEGER (0..65535)
+	            ACCESS  read-write
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Configuration options of LAN port (bitfield):
+						bit 15 - SyncIn mode (0 - disabled, 1 - enabled);
+						bits 14..13 - reserved;
+						bit 12 - sync_in QL mode (0 - auto, 1 - forced);
+						bits 11..8 - forced QL value (used only in forced mode (bit12=1)) (1-DNU, 2-SEC, 3-SSU_B, 4-SSU_A, 5-PRC);
+						bits 7..0 - sync input:
+							0..1 - STM-1 RCLK sources;
+							32..47 - E1 RCLK sources; 
+							64 - External sync input "
+	            ::= { syncInCfgEntry 2 }
+
+---------------------------
+-- 'SNMPConfig' SubDirectory --
+
+snmpTrap_Dst1_IpAddress    OBJECT-TYPE
+	SYNTAX  IpAddress
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+			"The IP address of 1-st destination for traps."
+	::= { SNMPConfig 1 }
+
+snmpTrap_Dst2_IpAddress    OBJECT-TYPE
+	SYNTAX  IpAddress
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+			"The IP address of 2-nd destination for traps."
+	::= { SNMPConfig 2 }
+
+snmpTrap-Dest1Port  OBJECT-TYPE
+	SYNTAX 	INTEGER (0..65535)
+	ACCESS  read-write
+	STATUS 	mandatory
+	DESCRIPTION 
+			"The 1-st destination UDP port for traps."
+	::= { SNMPConfig 3 }
+
+snmpTrap-Dest2Port  OBJECT-TYPE
+	SYNTAX 	INTEGER (0..65535)
+	ACCESS  read-write
+	STATUS 	mandatory
+	DESCRIPTION 
+			"The 2-nd destination UDP port for traps."
+	::= { SNMPConfig 4 }
+
+snmpTrap-Time1  OBJECT-TYPE
+	SYNTAX  INTEGER
+	ACCESS  read-write
+	STATUS 	mandatory
+	DESCRIPTION 
+			"Trap repeat time 1 (in seconds). 0 - disable; 1..120 - available setup range."
+	::= { SNMPConfig 5 }
+
+snmpTrap-Time2  OBJECT-TYPE
+	SYNTAX  INTEGER
+	ACCESS  read-write
+	STATUS 	mandatory
+	DESCRIPTION 
+			"Trap repeat time 2 (in minutes). 0 - disable; 1..120 - available setup range."
+	::= { SNMPConfig 6 }
+
+snmpCommunity    OBJECT-TYPE
+	SYNTAX  DisplayString (SIZE (0..255))
+	ACCESS  read-only
+	STATUS  mandatory
+	DESCRIPTION
+			"A textual description of SNMP agent Community."
+	::= { SNMPConfig 7 }
+
+
+---------------------------
+-- 'STPConfig' SubDirectory --
+
+GlSTP_config    OBJECT-TYPE
+	SYNTAX  INTEGER
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+	        " Global configuration options of spanning tree (bitfield):
+			bit 7 - GlobalState: 0 - disabled; 1 - enabled; 
+			bits 6..1 - reserved; 
+			bit 0 - STP mode: 0 - STP, 1 - RSTP "
+	::= { STPConfig 1 }
+
+HelloTime    OBJECT-TYPE
+	SYNTAX  INTEGER
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+			"Hello time in seconds (1..10)"
+	::= { STPConfig 2 }
+
+MaxAge    OBJECT-TYPE
+	SYNTAX  INTEGER
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+			"Maximum age in seconds (6..40)"
+	::= { STPConfig 3 }
+
+ForwardDelay    OBJECT-TYPE
+	SYNTAX  INTEGER
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+			"Forward delay in seconds (4..30)"
+	::= { STPConfig 4 }
+
+BrID_priority    OBJECT-TYPE
+    SYNTAX  INTEGER
+    ACCESS  read-write
+    STATUS  mandatory
+    DESCRIPTION
+    		"Bridge ID priority (0..61440 in step of 4096)"
+    ::= { STPConfig 5 }
+
+STP_PortCfgTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF STP_PortCfgEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"Spanning tree port configuration table"
+            ::= { STPConfig 6 }
+
+			stp_PortCfgEntry OBJECT-TYPE
+	            SYNTAX  STP_PortCfgEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the Spanning tree port configuration table."
+	            INDEX { STP_PortCfgIndex }
+	            ::= { STP_PortCfgTable 1 }
+
+			STP_PortCfgEntry ::= SEQUENCE {
+				STP_PortCfgIndex
+					INTEGER,
+				STP_PortCfgConfig
+					INTEGER,
+				STP_PortCfgID_Pri
+					INTEGER,
+				STP_PortCfgCost
+					INTEGER
+				}
+
+			STP_PortCfgIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each interface.  Its value ranges between 1 and number of STP ports."
+	            ::= { stp_PortCfgEntry 1 }
+			
+			STP_PortCfgConfig    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-write
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Configuration options of spanning tree port (bitfield):
+						bit 7 - State: 0 - disabled; 1 - enabled; 
+						bit 6 - PortFast: 0 - disabled; 1 - enabled; 
+						bit 5 - Auto PortFast: 0 - disabled; 1 - enabled; Valid only when PortFast(bit6)=1;  
+						bits 4..0 - reserved "
+	            ::= { stp_PortCfgEntry 2 }
+
+			STP_PortCfgID_Pri    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-write
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Port ID priority (0..240 in step of 16) "
+	            ::= { stp_PortCfgEntry 3 }
+
+			STP_PortCfgCost    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-write
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Port cost (1..200000000) "
+	            ::= { stp_PortCfgEntry 4 }
+
+---------------------------
+-- 'VLANConfig' SubDirectory --
+
+VLAN_PortCfgTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF VLAN_PortCfgEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"VLAN port configuration table"
+            ::= { VLANConfig 1 }
+
+			vlan_PortCfgEntry OBJECT-TYPE
+	            SYNTAX  VLAN_PortCfgEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the VLAN port configuration table."
+	            INDEX { VLAN_PortCfgIndex }
+	            ::= { VLAN_PortCfgTable 1 }
+
+			VLAN_PortCfgEntry ::= SEQUENCE {
+				VLAN_PortCfgIndex
+					INTEGER,
+				VLAN_PortCfgDefVID
+					INTEGER,
+				VLAN_PortCfgConfig
+					INTEGER
+				}
+
+			VLAN_PortCfgIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each interface.  Its value ranges between 1 and number of Ethernet ports."
+	            ::= { vlan_PortCfgEntry 1 }
+			
+			VLAN_PortCfgDefVID    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-write
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Default VLAN ID of port (1..4095) "
+	            ::= { vlan_PortCfgEntry 2 }
+
+			VLAN_PortCfgConfig    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-write
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" VLAN Configuration options of port (bitfield):
+						bits 15..3 - reserved; 
+						bits 2..1 - 802.1Q mode: 0 - disabled; 1 - bypass; 2 - check; 3 - secure; 
+						bit 0 - force ingress to default VID: 0 - disabled; 1 - enabled "
+	            ::= { vlan_PortCfgEntry 3 }
+
+VLAN_Table 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF VLAN_TableEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		" VLAN table "
+            ::= { VLANConfig 2 }
+
+			vlan_TableEntry OBJECT-TYPE
+	            SYNTAX  VLAN_TableEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the VLAN table."
+	            INDEX { VLAN_TableIndex }
+	            ::= { VLAN_Table 1 }
+
+			VLAN_TableEntry ::= SEQUENCE {
+				VLAN_TableIndex
+					INTEGER,
+				VLAN_TableVID
+					INTEGER,
+				VLAN_TableMember
+					INTEGER
+				}
+
+			VLAN_TableIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each entry.  Its value ranges between 1 and 256."
+	            ::= { vlan_TableEntry 1 }
+			
+			VLAN_TableVID    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-write
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" VLAN Table entry VID (bitfield):
+						bit 15 - mode (0 - invalid entry, 1 - valid entry); 
+						bits 14..2 - reserved; 
+						bits 11..0 - VLAN ID (1..4095) "
+	            ::= { vlan_TableEntry 2 }
+
+			VLAN_TableMember    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-write
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" VLAN membership of ports (bitfield):
+						bits 15..10 - reserved; 
+						bits 9..8 - option for port 5; 
+						bits 7..6 - option for port 4; 
+						bits 5..4 - option for port 3; 
+						bits 3..2 - option for port 2; 
+						bits 1..0 - option for port 1; 
+						 Member options: 0 - member, unmodified; 1 - member, untagged; 2 - member, tagged; 3 - not member "
+	            ::= { vlan_TableEntry 3 }
+
+---------------------------
+-- 'QoSConfig' SubDirectory --
+
+Tag_Pri_mapping    OBJECT-TYPE
+	SYNTAX  INTEGER
+	ACCESS  read-write
+	STATUS  mandatory
+	DESCRIPTION
+	        " 802.1p priority mapping (bitfield):
+			bits 15..14 - class for Pri=7; 
+			bits 13..12 - class for Pri=6; 
+			bits 11..10 - class for Pri=5; 
+			bits 9..8 - class for Pri=4; 
+			bits 7..6 - class for Pri=3; 
+			bits 5..4 - class for Pri=2; 
+			bits 3..2 - class for Pri=1; 
+			bits 1..0 - class for Pri=0; "
+	::= { QoSConfig 1 }
+
+DSCP_Pri_mapping 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF DSCP_mapEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		" DSCP priority mapping table. It defines class of service for different DSCP values "
+            ::= { QoSConfig 2 }
+
+			dscp_mapEntry OBJECT-TYPE
+	            SYNTAX  DSCP_mapEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the DSCP mapping table."
+	            INDEX { DSCP_mapIndex }
+	            ::= { DSCP_Pri_mapping 1 }
+
+			DSCP_mapEntry ::= SEQUENCE {
+				DSCP_mapIndex
+					INTEGER,
+				DSCP_mapValue
+					INTEGER
+				}
+
+			DSCP_mapIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each entry. Its value ranges between 1 and 8."
+	            ::= { dscp_mapEntry 1 }
+			
+			DSCP_mapValue    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-write
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" bitX,X+1 - class of service (0..3) (0-lowest)
+						   [0] - bits0,1 - IP_PRI 0; bits2,3 - IP_PRI 1;... ; bits14,15 - IP_PRI 7; 
+						   ...
+						   [7] - bits0,1 - IP_PRI 56; bits2,3 - IP_PRI 57;... ; bits14,15 - IP_PRI 63 "
+	            ::= { dscp_mapEntry 2 }
+
+QoS_PortCfgTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF QoS_PortCfgEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"QoS port configuration table"
+            ::= { QoSConfig 3 }
+
+			qos_PortCfgEntry OBJECT-TYPE
+	            SYNTAX  QoS_PortCfgEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the QoS port configuration table."
+	            INDEX { QoS_PortCfgIndex }
+	            ::= { QoS_PortCfgTable 1 }
+
+			QoS_PortCfgEntry ::= SEQUENCE {
+				QoS_PortCfgIndex
+					INTEGER,
+				QoS_PortCfgConfig
+					INTEGER,
+				QoS_PortCfgTagRemap
+					INTEGER
+				}
+
+			QoS_PortCfgIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each interface.  Its value ranges between 1 and number of Ethernet ports."
+	            ::= { qos_PortCfgEntry 1 }
+			
+			QoS_PortCfgConfig    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-write
+	            STATUS  mandatory
+	            DESCRIPTION
+						" QoS configuration of CPU port (bitfield):
+						bits 15..7 - reserved; 
+						bit6 - scheduling mode (0-Weighted Round Robin, 1-Strict)
+						bits5..3 - port default priority (0..7)
+						bit2 - Priority for tagged IP frames (0-IP, 1-tag)
+						bit1 - IP QoS (DSCP) enable (0-dont use IP priority, 1-use IP priority)
+						bit0 - 802.1p QoS enable (0-dont use tag priority, 1-use tag priority) "
+	            ::= { qos_PortCfgEntry 2 }
+
+			QoS_PortCfgTagRemap    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-write
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" 802.1p tag priority remap options of port (bitfield):
+						bit31 - reserved,   bits30..28 - Pri value for tag Pri=7; 
+						bit27 - reserved,   bits26..24 - Pri value for tag Pri=6; 
+						...
+						bit3 - reserved,   bits2..0 - Pri value for tag Pri=0 "
+	            ::= { qos_PortCfgEntry 3 }
+
+
+---------------------------
+-- 'RateLimitConfig' SubDirectory --
+
+RateLimit_PortCfgTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF RL_PortCfgEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		" Rate limit configuration for Ethernet ports "
+            ::= { RateLimitConfig 1 }
+
+			rl_PortCfgEntry OBJECT-TYPE
+	            SYNTAX  RL_PortCfgEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the rate limit port configuration table."
+	            INDEX { RL_PortCfgIndex }
+	            ::= { RateLimit_PortCfgTable 1 }
+
+			RL_PortCfgEntry ::= SEQUENCE {
+				RL_PortCfgIndex
+					INTEGER,
+				RL_PortCfgIngress
+					INTEGER,
+				RL_PortCfgEgress
+					INTEGER
+				}
+
+			RL_PortCfgIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each port. Its value ranges between 1 and number of LAN ports."
+	            ::= { rl_PortCfgEntry 1 }
+			
+			RL_PortCfgIngress    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-write
+	            STATUS  mandatory
+	            DESCRIPTION
+						" Port ingress rate limit options (bitfield):
+						  bit15 - enable ingress rate limit (0 - disable, 1 - enable); 
+						  bits14..13 - limit range (00 - 0-1Mbps(step 64k); 01 - 1-100Mbps (step 1M); 10, 11-reserved); 
+						  bits12..8 - reserved; 
+						  bits7..0 - limit value (0..100) "
+	            ::= { rl_PortCfgEntry 2 }
+
+			RL_PortCfgEgress    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-write
+	            STATUS  mandatory
+	            DESCRIPTION
+						" Port egress rate limit options (bitfield):
+						  bit15 - enable egress rate limit (0 - disable, 1 - enable); 
+						  bits14..13 - limit range (00 - 0-1Mbps(step 64k); 01 - 1-100Mbps (step 1M); 10, 11-reserved); 
+						  bits12..8 - reserved; 
+						  bits7..0 - limit value (0..100) "
+	            ::= { rl_PortCfgEntry 3 }
+
+---------------------------
+-- 'SysState' Directory --
+---------------------------
+
+CommonState		OBJECT IDENTIFIER ::= { SysState  1 }
+STM1State		OBJECT IDENTIFIER ::= { SysState  2 }
+E1State			OBJECT IDENTIFIER ::= { SysState  3 }
+EthState		OBJECT IDENTIFIER ::= { SysState  4 }
+SyncState		OBJECT IDENTIFIER ::= { SysState  5 }
+EventJournal	OBJECT IDENTIFIER ::= { SysState  6 }
+STPState		OBJECT IDENTIFIER ::= { SysState  7 }
+
+---------------------------
+-- 'CommonState' SubDirectory --
+
+CommonAlarm  OBJECT-TYPE
+	SYNTAX  INTEGER {
+		OK (0),
+		MAJOR (1),
+		MINOR (2)
+	}
+	ACCESS  read-only
+	STATUS 	mandatory
+	DESCRIPTION 
+			"Common alarms status"
+	::= { CommonState 1 }
+
+LocalAlarm  OBJECT-TYPE
+	SYNTAX  INTEGER {
+		OK (0),
+		MAJOR (1),
+		MINOR (2)
+	}
+	ACCESS  read-only
+	STATUS 	mandatory
+	DESCRIPTION 
+			"Device local alarms status"
+	::= { CommonState 2 }
+
+BPAlarm  OBJECT-TYPE
+	SYNTAX  INTEGER {
+		OK (0),
+		MAJOR (1),
+		MINOR (2)
+	}
+	ACCESS  read-only
+	STATUS 	mandatory
+	DESCRIPTION 
+			"Backplane alarms status"
+	::= { CommonState 3 }
+
+SysTime  OBJECT-TYPE
+	SYNTAX  OCTET STRING (SIZE(6))
+	ACCESS  read-write
+	STATUS 	mandatory
+	DESCRIPTION 
+			"Current system time"
+	::= { CommonState 4 }
+
+---------------------------
+-- 'STM1State' SubDirectory --
+
+STM1StatusTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF STM1StatusEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"The STM1 status table."
+            ::= { STM1State 1 }
+
+			stm1StatusEntry OBJECT-TYPE
+	            SYNTAX  STM1StatusEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the STM1 status table."
+	            INDEX { STM1StatusIndex }
+	            ::= { STM1StatusTable 1 }
+
+			STM1StatusEntry ::= SEQUENCE {
+				STM1StatusIndex
+					INTEGER,
+				STM1StatusStatus
+					INTEGER,
+				MSP_path_state
+					INTEGER
+				}
+
+			STM1StatusIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each entry.  Its value ranges between 1 and number of available STM1 ports."
+	            ::= { stm1StatusEntry 1 }
+			
+			STM1StatusStatus    OBJECT-TYPE
+	            SYNTAX  INTEGER 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Current status flags for STM1 port (bitfield):
+						 bits 15..12 - reserved; 
+						 bit 11 - LOM (POH alarm); 
+						 bit 10 - HP-UNEQ (POH alarm); 
+						 bit 9 - VC-AIS (POH alarm);
+						 bit 8 - Loss Of Pointer (POH alarm); 
+						 bit 7 - AU-AIS (POH alarm);
+						 bit 6 - DEG (MS alarm);
+						 bit 5 - EXC (MS alarm); 
+						 bit 4 - MS-RDI (MS alarm);
+						 bit 3 - MS-AIS (MS alarm); 
+						 bit 2 - LOF (RS alarm); 
+						 bit 1 - LOS (no signal from SFP); 
+						 bit 0 - no SFP "
+	            ::= { stm1StatusEntry 2 }
+
+			MSP_path_state    OBJECT-TYPE
+				SYNTAX  INTEGER {
+					NORMAL (0),
+					SIGNAL_FAIL (1),
+					SIGNAL_DEGRADE (2)
+				}
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" State of MSP path (0 - Normal; 1 - Signal Fail; 2 - Signal Degrade "
+	            ::= { stm1StatusEntry 3 }
+
+
+STM1_RS_StatisticsTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF STM1_RS_StatEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"The STM1 Regenerator section statistics table."
+            ::= { STM1State 2 }
+
+			stm1_RS_StatEntry OBJECT-TYPE
+	            SYNTAX  STM1_RS_StatEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the STM1 Regenerator section statistics table."
+	            INDEX { STM1_RS_StatIndex }
+	            ::= { STM1_RS_StatisticsTable 1 }
+
+			STM1_RS_StatEntry ::= SEQUENCE {
+				STM1_RS_StatIndex
+					INTEGER,
+				STM1_RS_EB
+					Counter,
+				STM1_RS_ES
+					Counter,
+				STM1_RS_SES
+					Counter,
+				STM1_RS_AvTime
+					Counter,
+				STM1_RS_UnavTime
+					Counter
+				}
+
+			STM1_RS_StatIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each entry.  Its value ranges between 1 and number of available STM1 ports."
+	            ::= { stm1_RS_StatEntry 1 }
+			
+			STM1_RS_EB    OBJECT-TYPE
+	            SYNTAX  Counter 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Errored blocks counter "
+	            ::= { stm1_RS_StatEntry 2 }
+
+			STM1_RS_ES    OBJECT-TYPE
+	            SYNTAX  Counter 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Errored seconds counter "
+	            ::= { stm1_RS_StatEntry 3 }
+
+			STM1_RS_SES    OBJECT-TYPE
+	            SYNTAX  Counter 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Severely errored seconds counter "
+	            ::= { stm1_RS_StatEntry 4 }
+
+			STM1_RS_AvTime    OBJECT-TYPE
+	            SYNTAX  Counter 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" RS availability time counter "
+	            ::= { stm1_RS_StatEntry 5 }
+
+			STM1_RS_UnavTime    OBJECT-TYPE
+	            SYNTAX  Counter 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" RS unavailability time counter "
+	            ::= { stm1_RS_StatEntry 6 }
+
+STM1_MS_StatisticsTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF STM1_MS_StatEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"The STM1 Multiplex section statistics table."
+            ::= { STM1State 3 }
+
+			stm1_MS_StatEntry OBJECT-TYPE
+	            SYNTAX  STM1_MS_StatEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the STM1 Multiplex section statistics table."
+	            INDEX { STM1_MS_StatIndex }
+	            ::= { STM1_MS_StatisticsTable 1 }
+
+			STM1_MS_StatEntry ::= SEQUENCE {
+				STM1_MS_StatIndex
+					INTEGER,
+				STM1_MS_EB
+					Counter,
+				STM1_MS_ES
+					Counter,
+				STM1_MS_SES
+					Counter,
+				STM1_MS_AvTime
+					Counter,
+				STM1_MS_UnavTime
+					Counter
+				}
+
+			STM1_MS_StatIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each entry.  Its value ranges between 1 and number of available STM1 ports."
+	            ::= { stm1_MS_StatEntry 1 }
+			
+			STM1_MS_EB    OBJECT-TYPE
+	            SYNTAX  Counter 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Errored blocks counter "
+	            ::= { stm1_MS_StatEntry 2 }
+
+			STM1_MS_ES    OBJECT-TYPE
+	            SYNTAX  Counter 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Errored seconds counter "
+	            ::= { stm1_MS_StatEntry 3 }
+
+			STM1_MS_SES    OBJECT-TYPE
+	            SYNTAX  Counter 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Severely errored seconds counter "
+	            ::= { stm1_MS_StatEntry 4 }
+
+			STM1_MS_AvTime    OBJECT-TYPE
+	            SYNTAX  Counter 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" MS availability time counter "
+	            ::= { stm1_MS_StatEntry 5 }
+
+			STM1_MS_UnavTime    OBJECT-TYPE
+	            SYNTAX  Counter 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" MS unavailability time counter "
+	            ::= { stm1_MS_StatEntry 6 }
+
+STM1_CountersTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF STM1_CountersEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"The different STM1 counters table."
+            ::= { STM1State 4 }
+
+			stm1_CountersEntry OBJECT-TYPE
+	            SYNTAX  STM1_CountersEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the STM1 Multiplex section statistics table."
+	            INDEX { STM1_CountersIndex }
+	            ::= { STM1_CountersTable 1 }
+
+			STM1_CountersEntry ::= SEQUENCE {
+				STM1_CountersIndex
+					INTEGER,
+				STM1_MS_REI
+					Counter,
+				STM1_VC4_EB
+					Counter,
+				STM1_VC4_REI
+					Counter,
+				STM1_AU4_PPJ
+					Counter,
+				STM1_AU4_NPJ
+					Counter
+				}
+
+			STM1_CountersIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each entry.  Its value ranges between 1 and number of available STM1 ports."
+	            ::= { stm1_CountersEntry 1 }
+			
+			STM1_MS_REI    OBJECT-TYPE
+	            SYNTAX  Counter 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" MS Remote Error Indication counter "
+	            ::= { stm1_CountersEntry 2 }
+
+			STM1_VC4_EB    OBJECT-TYPE
+	            SYNTAX  Counter 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" VC-4 Errored blocks counter "
+	            ::= { stm1_CountersEntry 3 }
+
+			STM1_VC4_REI    OBJECT-TYPE
+	            SYNTAX  Counter 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" VC-4 Remote Error Indication counter "
+	            ::= { stm1_CountersEntry 4 }
+
+			STM1_AU4_PPJ    OBJECT-TYPE
+	            SYNTAX  Counter 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" AU-4 Positive pointer justification events counter "
+	            ::= { stm1_CountersEntry 5 }
+
+			STM1_AU4_NPJ    OBJECT-TYPE
+	            SYNTAX  Counter 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" AU-4 Negative pointer justification events counter "
+	            ::= { stm1_CountersEntry 6 }
+
+MSP_ReservationStatus  OBJECT-TYPE
+	SYNTAX  INTEGER 
+	ACCESS  read-only
+	STATUS 	mandatory
+	DESCRIPTION 
+			" MSP reservation status (bitfield): 
+			 bits7..2 - reserved; 
+			 bit 1 - flag of K1/K2 values mismatch (0 - OK, 1 - mismatch); 
+			 bit 0 - state of MSP protection (0 - working, 1 - protection) "
+	::= { STM1State 5 }
+
+MSP_CurrentRequest  OBJECT-TYPE
+	SYNTAX  INTEGER 
+	ACCESS  read-only
+	STATUS 	mandatory
+	DESCRIPTION 
+			" MSP current request: 
+			 bits 7..4 - request type; 
+			 bits 3..0 - signal number "
+	::= { STM1State 6 }
+
+MSP_TxK1K2  OBJECT-TYPE
+	SYNTAX  INTEGER 
+	ACCESS  read-only
+	STATUS 	mandatory
+	DESCRIPTION 
+			" MSP currently transmitted K1 & K2 bytes: 
+			 bits 15..8 - K1 byte value; 
+			 bits 7..0 - K2 byte value "
+	::= { STM1State 7 }
+
+MSP_RxK1K2  OBJECT-TYPE
+	SYNTAX  INTEGER 
+	ACCESS  read-only
+	STATUS 	mandatory
+	DESCRIPTION 
+			" MSP currently received K1 & K2 bytes: 
+			 bits 15..8 - K1 byte value; 
+			 bits 7..0 - K2 byte value "
+	::= { STM1State 8 }
+
+---------------------------
+-- 'E1State' SubDirectory --
+
+E1StatusTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF E1StatusEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"The E1 status table."
+            ::= { E1State 1 }
+
+			e1StatusEntry OBJECT-TYPE
+	            SYNTAX  E1StatusEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the E1 status table."
+	            INDEX { E1StatusIndex }
+	            ::= { E1StatusTable 1 }
+
+			E1StatusEntry ::= SEQUENCE {
+				E1StatusIndex
+					INTEGER,
+				E1StatusStatus
+					INTEGER,
+				E1StatusMainVC12
+					INTEGER,
+				E1StatusMainVC12_State
+					INTEGER,
+				E1StatusReserveVC12
+					INTEGER,
+				E1StatusReserveVC12_State
+					INTEGER
+				}
+
+			E1StatusIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each E1 port.  Its value ranges between 1 and number of available E1 ports."
+	            ::= { e1StatusEntry 1 }
+			
+			E1StatusStatus    OBJECT-TYPE
+	            SYNTAX  INTEGER 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Current status of E1 port (bitfield):
+						 bits 7..3 - reserved; 
+						 bit 2 - SNCP protection state (0 - main port is active, 1 - reserve port is active); 
+						 bit 1 - AIS; 
+						 bit 0 - LOS "
+	            ::= { e1StatusEntry 2 }
+
+			E1StatusMainVC12    OBJECT-TYPE
+	            SYNTAX  INTEGER 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Main VC12 for E1 port (bitfield):
+						 bit15 - VC12 assigned flag (0-not assigned, 1-assigned); 
+						 bits14..7 - reserved; 
+						 bit6 - number of STM-1 port; 
+						 bits5..0 - number of VC12 in STM-1 port (0..62) "
+	            ::= { e1StatusEntry 3 }
+
+			E1StatusMainVC12_State    OBJECT-TYPE
+	            SYNTAX  INTEGER 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Status of Main VC12 for E1 port (bitfield):
+						 bit15 - TU-LOP; 
+						 bit14 - TU-AIS; 
+						 bit13 - VC-AIS; 
+						 bit12 - VC-UNEQ; 
+						 bit11 - PLM; 
+						 bit10 - RDI; 
+						 bit9 - EXC;
+						 bit8 - DEG; 
+						 bits7..0 - reserved "
+	            ::= { e1StatusEntry 4 }
+
+			E1StatusReserveVC12    OBJECT-TYPE
+	            SYNTAX  INTEGER 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Reserve VC12 for E1 port (bitfield):
+						 bit15 - VC12 assigned flag (0-not assigned, 1-assigned); 
+						 bits14..7 - reserved; 
+						 bit6 - number of STM-1 port; 
+						 bits5..0 - number of VC12 in STM-1 port (0..62) "
+	            ::= { e1StatusEntry 5 }
+
+			E1StatusReserveVC12_State    OBJECT-TYPE
+	            SYNTAX  INTEGER 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Status of Reserve VC12 for E1 port (bitfield):
+						 bit15 - TU-LOP; 
+						 bit14 - TU-AIS; 
+						 bit13 - VC-AIS; 
+						 bit12 - VC-UNEQ; 
+						 bit11 - PLM; 
+						 bit10 - RDI; 
+						 bit9 - EXC;
+						 bit8 - DEG; 
+						 bits7..0 - reserved "
+	            ::= { e1StatusEntry 6 }
+
+
+---------------------------
+-- 'EthState' SubDirectory --
+
+LANStatTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF LAN_EthStatEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"Status and statistics table for LAN Ethernet ports"
+            ::= { EthState 1 }
+
+			lan_EthStatEntry OBJECT-TYPE
+	            SYNTAX  LAN_EthStatEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the LAN Ethernet status and statistics table."
+	            INDEX { LAN_EthStatIndex }
+	            ::= { LANStatTable 1 }
+
+			LAN_EthStatEntry ::= SEQUENCE {
+				LAN_EthStatIndex
+					INTEGER,
+				LAN_EthStatStatus
+					INTEGER,
+				LAN_EthStatRxGoodOctets
+					Counter,
+				LAN_EthStatRxBadOctets
+					Counter,
+				LAN_EthStatRxFrames
+					Counter,
+				LAN_EthStatRxErrors
+					Counter,
+				LAN_EthStatTxOctets
+					Counter,
+				LAN_EthStatTxFrames
+					Counter
+				}
+
+			LAN_EthStatIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each port.  Its value ranges between 1 and number of LAN ports."
+	            ::= { lan_EthStatEntry 1 }
+
+			LAN_EthStatStatus    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"Current status of LAN Ethernet port (bitfield):
+						bits 15..6 - reserved; 
+						bit 5 - MDI crossover status (0 - MDI, 1 - MDIX); 
+						bit 4 - ANeg status (0 - ANeg not complete, 1 - ANeg complete); 
+						bit 3 - Link status (0 - Link Down, 1 - Link Up);
+						bit 2 - Duplex (0 - half, 1 - full);
+						bits 0..1 - Speed (00 - 10Mbps, 01 - 100Mbps, 10, 11 - reserved)"
+	            ::= { lan_EthStatEntry 2 }
+			
+			LAN_EthStatRxGoodOctets    OBJECT-TYPE
+	            SYNTAX  Counter
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"Number of octets received without errors "
+	            ::= { lan_EthStatEntry 3 }
+
+			LAN_EthStatRxBadOctets    OBJECT-TYPE
+	            SYNTAX  Counter
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"Number of errored octets "
+	            ::= { lan_EthStatEntry 4 }
+
+			LAN_EthStatRxFrames    OBJECT-TYPE
+	            SYNTAX  Counter
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"Number of received frames"
+	            ::= { lan_EthStatEntry 5 }
+
+			LAN_EthStatRxErrors    OBJECT-TYPE
+	            SYNTAX  Counter
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"Number of errors for Rx"
+	            ::= { lan_EthStatEntry 6 }
+
+			LAN_EthStatTxOctets    OBJECT-TYPE
+	            SYNTAX  Counter
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"Number of transmitted octets"
+	            ::= { lan_EthStatEntry 7 }
+
+			LAN_EthStatTxFrames    OBJECT-TYPE
+	            SYNTAX  Counter
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"Number of transmitted frames"
+	            ::= { lan_EthStatEntry 8 }
+
+WANStatTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF WAN_EthStatEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"Status table for WAN Ethernet ports"
+            ::= { EthState 2 }
+
+			wan_EthStatEntry OBJECT-TYPE
+	            SYNTAX  WAN_EthStatEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the WAN Ethernet ports status table."
+	            INDEX { WAN_EthStatIndex }
+	            ::= { WANStatTable 1 }
+
+			WAN_EthStatEntry ::= SEQUENCE {
+				WAN_EthStatIndex
+					INTEGER,
+				WAN_EthStatNumber_of_VC12
+					INTEGER,
+				WAN_EthStatLinkState
+					INTEGER,
+				WAN_EthStatGFPState
+					INTEGER
+				}
+
+			WAN_EthStatIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each port.  Its value ranges between 1 and number of WAN ports."
+	            ::= { wan_EthStatEntry 1 }
+
+			WAN_EthStatNumber_of_VC12    OBJECT-TYPE
+	            SYNTAX  INTEGER 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Number of VC12 used for WAN port"
+	            ::= { wan_EthStatEntry 2 }
+
+			WAN_EthStatLinkState    OBJECT-TYPE
+	            SYNTAX  INTEGER 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"Current link state of WAN port (bitfield):
+						bits 7..1 - reserved; 
+						bit 0 - Link state (0 - down, 1 - up)"
+	            ::= { wan_EthStatEntry 3 }
+
+			WAN_EthStatGFPState    OBJECT-TYPE
+	            SYNTAX  INTEGER 
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"Current state of GFP decapsulation module (bitfield):
+						bit 12 - flag of GFP SYNC state; 
+						bit 9 - flag of GFP PRESYNC state; 
+						bit 5 - flag of GFP HUNT state"
+	            ::= { wan_EthStatEntry 4 }
+			
+
+WAN_VC12_StatTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF WAN_VC12_StatEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"Status table for VC12 "
+            ::= { EthState 3 }
+
+			wan_VC12_StatEntry OBJECT-TYPE
+	            SYNTAX  WAN_VC12_StatEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the VC12 status table."
+	            INDEX { WAN_VC12_StatIndex }
+	            ::= { WAN_VC12_StatTable 1 }
+
+			WAN_VC12_StatEntry ::= SEQUENCE {
+				WAN_VC12_StatIndex
+					INTEGER,
+				WAN_VC12_Mapping
+					INTEGER,
+				WAN_VC12_VCAT_State
+					INTEGER,
+				WAN_VC12_Trib_State
+					INTEGER,
+				WAN_VC12_RxVCAT_State
+					INTEGER,
+				WAN_VC12_TxVCAT_State
+					INTEGER
+				}
+
+			WAN_VC12_StatIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each VC12.  Its value ranges between 1 and 63."
+	            ::= { wan_VC12_StatEntry 1 }
+
+			WAN_VC12_Mapping    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Mapping of VC12 to STM-1 ports (bitfield):
+						bit 15 - active flag (0 - idle; 1 - active); 
+						bits 14..12 - reserved;
+						bits 11..8 - number of STM (0..1); 
+						bits 7..6 - reserved;  
+						bits 5..0 - number of VC12 (0..62) "
+	            ::= { wan_VC12_StatEntry 2 }
+
+			WAN_VC12_VCAT_State    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" VCAT state of VC12:
+						0 - Idle; 
+						1 - Adding; 
+						2 - Active "
+	            ::= { wan_VC12_StatEntry 3 }
+			
+			WAN_VC12_Trib_State    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" State of VC12 tributary (bitfield):
+						 bit14 - LOP; 
+						 bit13 - TU-AIS; 
+						 bit10 - K4-LOM; 
+						 bit6 - V5-RDI; 
+						 bit4 - V5-UNEQ; 
+						 bit3 - V5-PLM; 
+						 bit2 - V5-AIS "
+	            ::= { wan_VC12_StatEntry 4 }
+
+			WAN_VC12_RxVCAT_State    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Rx VCAT state for VC12 (bitfield):
+						 bits 14..9 - sequence indicator value; 
+						 bits 8..5 - CTRL field value "
+	            ::= { wan_VC12_StatEntry 5 }
+
+			WAN_VC12_TxVCAT_State    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Tx VCAT state for VC12 (bitfield):
+						 bits 14..9 - sequence indicator value; 
+						 bits 8..5 - CTRL field value; 
+						 bit0 - FAIL flag (for LCAS mode) "
+	            ::= { wan_VC12_StatEntry 6 }
+
+
+---------------------------
+-- 'SyncState' SubDirectory --
+
+Sync_state  OBJECT-TYPE
+	SYNTAX  INTEGER {
+		NO_SWITCH (0),
+		MANUAL_SWITCH_ACT (1),
+		FORCED_SWITCH_ACT (2),
+		FORCED_FREERUN (3)
+	}
+	ACCESS  read-only
+	STATUS 	mandatory
+	DESCRIPTION 
+			"Global sync status"
+	::= { SyncState 1 }
+
+Sync_QL  OBJECT-TYPE
+	SYNTAX  INTEGER {
+		QL_UNDEF (0),
+		QL_DNU (1),
+		QL_SEC (2),
+		QL_SSU_B (3),
+		QL_SSU_A (4),
+		QL_PRC (5)
+	}
+	ACCESS  read-only
+	STATUS 	mandatory
+	DESCRIPTION 
+			"System Quality level"
+	::= { SyncState 2 }
+
+CurrentSyncSource  OBJECT-TYPE
+	SYNTAX  INTEGER 
+	ACCESS  read-only
+	STATUS 	mandatory
+	DESCRIPTION 
+	        " Current system synchronization source:
+			0..1 - STM-1 RCLK sources; 
+			32..47 - E1 RCLK sources
+			64 - External sync input
+			128 - Holdover mode
+			255 - internal generator (Free run) "
+	::= { SyncState 3 }
+
+CurrentSyncState  OBJECT-TYPE
+	SYNTAX  INTEGER 
+	ACCESS  read-only
+	STATUS 	mandatory
+	DESCRIPTION 
+	        " State of current system synchronization source (bitfield):
+			bits 7..3 - reserved; 
+			bit 2 - Reference failure
+			bit 1 - Locked
+			bit 0 - Holdover "
+	::= { SyncState 4 }
+
+SyncIn_StateTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF SyncIn_StatEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"Sync inputs status table"
+            ::= { SyncState 5 }
+
+			syncIn_StatEntry OBJECT-TYPE
+	            SYNTAX  SyncIn_StatEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in sync inputs status table"
+	            INDEX { SyncIn_StatIndex }
+	            ::= { SyncIn_StateTable 1 }
+
+			SyncIn_StatEntry ::= SEQUENCE {
+				SyncIn_StatIndex
+					INTEGER,
+				SyncIn_Status
+					INTEGER
+				}
+
+			SyncIn_StatIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for input.  Its value ranges between 1 and 4."
+	            ::= { syncIn_StatEntry 1 }
+
+			SyncIn_Status    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"Status of sync input (bitfield):
+						bit 7 - reserved; 
+						bit 6 - lock-out flag;
+						bit 5 - reserved; 
+						bit 4 - signal fail flag; 
+						bits 3..0 - QL of sync input "
+	            ::= { syncIn_StatEntry 2 }
+
+
+---------------------------
+-- 'EventJournal' SubDirectory --
+
+EventsTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF EventEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"Event journal table"
+            ::= { EventJournal 1 }
+
+			eventEntry OBJECT-TYPE
+	            SYNTAX  EventEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in event journal"
+	            INDEX { EventIndex }
+	            ::= { EventsTable 1 }
+
+			EventEntry ::= SEQUENCE {
+				EventIndex
+					INTEGER,
+				EventElement
+					OCTET STRING
+				}
+
+			EventIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"Event number. Maximum number of events in journal is 1024. 
+						But really number of events depend on actually occured events"
+	            ::= { eventEntry 1 }
+
+			EventElement    OBJECT-TYPE
+	            SYNTAX  OCTET STRING (SIZE(16))
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"Event entry. One entry contain 16 bytes:
+						bytes 0..5 - time of event; 
+						byte 6 - type of event (0 - Power down, 1 - E1 port event, 3 - Start working,
+								5 - copper Ethernet port event, 6 - fiber Ethernet port event); 
+						byte 7 - number of port for appropriate event type (for E1 events - 1..8,
+								for copper or fiber Ethernet events - 1..2); 
+						byte 8 - current state of port; 
+						byte 9 - previous state of port; 
+						bytes 10..15 - reserved "
+	            ::= { eventEntry 2 }
+			
+
+---------------------------
+-- 'STPState' SubDirectory --
+
+RootBrID  OBJECT-TYPE
+	SYNTAX  OCTET STRING (SIZE(8))
+	ACCESS  read-only
+	STATUS 	mandatory
+	DESCRIPTION 
+			"Root bridge ID"
+	::= { STPState 1 }
+
+RootPathCost  OBJECT-TYPE
+	SYNTAX  INTEGER 
+	ACCESS  read-only
+	STATUS 	mandatory
+	DESCRIPTION 
+			"Root path cost"
+	::= { STPState 2 }
+
+RootPort  OBJECT-TYPE
+	SYNTAX  INTEGER 
+	ACCESS  read-only
+	STATUS 	mandatory
+	DESCRIPTION 
+			"Root port number"
+	::= { STPState 3 }
+
+RootHelloTime  OBJECT-TYPE
+	SYNTAX  INTEGER 
+	ACCESS  read-only
+	STATUS 	mandatory
+	DESCRIPTION 
+			"Root hello time"
+	::= { STPState 4 }
+
+RootMaxAge  OBJECT-TYPE
+	SYNTAX  INTEGER 
+	ACCESS  read-only
+	STATUS 	mandatory
+	DESCRIPTION 
+			"Root maximum age"
+	::= { STPState 5 }
+
+RootForwardDelay  OBJECT-TYPE
+	SYNTAX  INTEGER 
+	ACCESS  read-only
+	STATUS 	mandatory
+	DESCRIPTION 
+			"Root forward delay"
+	::= { STPState 6 }
+
+STP_PortStatTable 	OBJECT-TYPE
+			SYNTAX  SEQUENCE OF STP_PortStatEntry
+            ACCESS  not-accessible
+            STATUS  mandatory
+            DESCRIPTION
+            		"STP port status table."
+            ::= { STPState 7 }
+
+			stp_PortStatEntry OBJECT-TYPE
+	            SYNTAX  STP_PortStatEntry
+	            ACCESS  not-accessible
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"An entry in the STP port status table."
+	            INDEX { STP_PortStatIndex }
+	            ::= { STP_PortStatTable 1 }
+
+			STP_PortStatEntry ::= SEQUENCE {
+				STP_PortStatIndex
+					INTEGER,
+				STP_PortStatStatus
+					INTEGER,
+				STP_PortStatRole
+					INTEGER,
+				STP_PortStatFlags
+					INTEGER
+				}
+
+			STP_PortStatIndex    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"A unique value for each interface.  Its value ranges between 1 and 5."
+	            ::= { stp_PortStatEntry 1 }
+			
+			STP_PortStatStatus    OBJECT-TYPE
+	            SYNTAX  INTEGER {
+					Blocking (0),
+					Learning (1),
+					Forwarding (2)
+				}
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Current state of STP port: 0 - Blocking; 1 - Learning; 2 - Forwarding."
+	            ::= { stp_PortStatEntry 2 }
+
+			STP_PortStatRole    OBJECT-TYPE
+	            SYNTAX  INTEGER {
+					Disabled (0),
+					Root (1),
+					Designated (2),
+					Alternate (3),
+					Backup (4)
+				}
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		" Current role of port: 0 - Disabled; 1 - Root; 2 - Designated; 3 - Alternate; 4 - Backup."
+	            ::= { stp_PortStatEntry 3 }
+
+			STP_PortStatFlags    OBJECT-TYPE
+	            SYNTAX  INTEGER
+	            ACCESS  read-only
+	            STATUS  mandatory
+	            DESCRIPTION
+	            		"Different flags of STP port status (bitfield):
+						bits 7..2 - reserved; 
+						bit1 - Edge port mode (PortFast) (0 - non edge, 1 - edge); 
+						bit0 - port STP mode (0 - STP, 1 - RSTP)"
+	            ::= { stp_PortStatEntry 4 }
+
+
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+
+------------------------
+-- 'trap-bind' Directory --
+------------------------
+
+trap_GlobalAlarm  OBJECT-TYPE
+	SYNTAX  INTEGER {
+        Normal (0),
+        Major (1),
+        Minor (2)
+         }
+	ACCESS     read-only
+	STATUS     mandatory
+	DESCRIPTION 
+		"Device global alarm status: 0 - Normal; 1 - Major; 2 - Minor; 3 - Major+Minor."
+	::= { trap-bind 1 }
+
+trap_EventType  OBJECT-TYPE
+	SYNTAX     INTEGER
+	ACCESS     read-only
+	STATUS     mandatory
+	DESCRIPTION 
+		"A unique value to identify Event Type: 
+		 1 - Copper Ethernet; 
+		 2 – Fiber Ethernet; 
+		 3 – E1; 
+		 4 - System; 
+		 5 - Backplane.
+     6 - STM-1"
+	::= { trap-bind 2 }
+
+trap_IfIndex  OBJECT-TYPE
+	SYNTAX     INTEGER
+	ACCESS     read-only
+	STATUS     mandatory
+	DESCRIPTION 
+		"A unique value to identify Interface Index in the range of: Copper Ethernet(1..3); 
+		E1(1..16); System(0); STM-1(1,2);."
+	::= { trap-bind 3 }
+
+trap_IfStatus  OBJECT-TYPE
+	SYNTAX     INTEGER
+	ACCESS     read-only
+	STATUS     mandatory
+	DESCRIPTION 
+		"A unique value to identify Interface alarm status => 
+		0 - normal;
+		Copper or Fiber Ethernet: 13 - Ethernet link is down, 33 - Ethernet link is up;
+		E1: 1 - LOS, 2 - LOF, 3 - AIS, 4 - RAI, 21 - LOS fallout, 22 - LOF fallout, 23 - AIS fallout, 24 - RAI fallout;
+		System: 12 - device start up;
+		STM-1: 41 - NO_SFP, 42 - LOS, 43 - LOF, 44 - MS_AIS, 45 - MS_RDI, 46 - AU_AIS, 47 - LOP, 48 - VC_AIS, 49 - VC_UNEQ,
+					 50 - LOM, 51 - NO_SFP_CLR, 52 - LOS_CLR, 53 - LOF_CLR, 54 - MS_AIS_CLR, 55 - MS_RDI_CLR, 56 - AU_AIS_CLR, 
+					 57 - LOP_CLR, 58 - VC_AIS_CLR, 59 - VC_UNEQ_CLR, 60 - LOM_CLR, 61 - DEG, 62 - DEG_CLR."		
+	::= { trap-bind 4 }
+
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+
+--------------------------
+-- 'commands' Directory --
+--------------------------
+
+ApplyCmd  OBJECT-TYPE
+	SYNTAX  INTEGER { Set (1) }
+	ACCESS     read-write
+	STATUS     mandatory
+	DESCRIPTION 
+		"Command for apply new settings."
+	::= { commands 1 }
+
+SaveCmd  OBJECT-TYPE
+	SYNTAX  INTEGER { Set (1) }
+	ACCESS     read-write
+	STATUS     mandatory
+	DESCRIPTION 
+		"Command for save new settings."
+	::= { commands 2 }
+
+RestoreCmd  OBJECT-TYPE
+	SYNTAX  INTEGER { Set (1) }
+	ACCESS     read-write
+	STATUS     mandatory
+	DESCRIPTION 
+		"Command for restore settings from Flash-memory."
+	::= { commands 3 }
+
+ResetCmd  OBJECT-TYPE
+	SYNTAX  INTEGER { Set (1) }
+	ACCESS     read-write
+	STATUS     mandatory
+	DESCRIPTION 
+		"Command for reset device."
+	::= { commands 4 }
+
+JournalEraseCmd  OBJECT-TYPE
+	SYNTAX  INTEGER { Set (1) }
+	ACCESS     read-write
+	STATUS     mandatory
+	DESCRIPTION 
+		"Command for clear event journal."
+	::= { commands 5 }
+
+ClearStatsCmd  OBJECT-TYPE
+	SYNTAX  INTEGER
+	ACCESS     read-write
+	STATUS     mandatory
+	DESCRIPTION 
+		"Command for clear statistics for ports. Write port type and port number to clear its statistics.   
+		bits 15..8 - port type (0 - E1 port, 1 - copper Ethernet port, 2 - STM-1 port);   
+		bits 7..0 - port number (0 - 1st, 1 - 2nd, ... 0xFF - all ports)"
+	::= { commands 6 }
+
+ResetSettingsCmd  OBJECT-TYPE
+	SYNTAX  INTEGER { Set (1) }
+	ACCESS     read-write
+	STATUS     mandatory
+	DESCRIPTION 
+		"Command for reset settings to its default (without apply)."
+	::= { commands 7 }
+
+SyncCmd  OBJECT-TYPE
+	SYNTAX  INTEGER
+	ACCESS     read-write
+	STATUS     mandatory
+	DESCRIPTION 
+		"Sync Control Commands: 
+		bits 15..8 - command type (0 - set lock-out, 1 - clear lock-out, 2 - clear forced and manual switch, 
+		                           3 - forced switch, 4 - manual switch; 
+		bits 7..0 - sync input (0..1 - STM-1 RCLK, 32..47 - E1 RCLK, 64 - External sync input)"
+	::= { commands 8 }
+
+MSP_Cmd  OBJECT-TYPE
+	SYNTAX  INTEGER
+	ACCESS     read-write
+	STATUS     mandatory
+	DESCRIPTION 
+		"Multiplex Section Protection Control Commands: 
+		bits 15..8 - command type (0 - clear, 1 - lock-out of protection, 2 - forced switch, 3 - manual switch; 
+		bits 7..0 - path number (0 - working path, 1 - protection path)"
+	::= { commands 9 }
+
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+
+-----------------------------
+-- 'MLink-Traps' Directory --
+-----------------------------
+
+MLink-STM1_trap  TRAP-TYPE
+	ENTERPRISE MLink-STM-1
+	VARIABLES { sysType, Net_ID, sysSw_Version, sysHw_Version, sysSerial_Num,
+				trap_GlobalAlarm, trap_EventType, trap_IfIndex, trap_IfStatus }
+	DESCRIPTION 
+			"An event or alarm has occurred in the system which should be brought to the manager's attention."
+	::= 1
+
+
+
+		END
+

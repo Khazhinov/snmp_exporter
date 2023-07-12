@@ -1,0 +1,9 @@
+FROM golang:latest
+
+RUN apt-get update && apt-get install unzip build-essential libsnmp-dev -y
+
+WORKDIR /snmp_exporter
+
+COPY . /snmp_exporter
+
+RUN cd ./generator && make generator
